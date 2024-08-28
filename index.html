@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/images/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bupu-admin</title>
+  </head>
+  <style>
+    #root {
+      width: 100%;
+      height: 100%;
+    }
+
+    @-moz-keyframes dots-loader {
+      0% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      8.33% {
+        -moz-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      16.67% {
+        -moz-box-shadow: #f86 14px 14px 0 7px, #fc6 14px 14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 14px 14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      25% {
+        -moz-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      33.33% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae -14px -14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae -14px -14px 0 7px;
+      }
+      41.67% {
+        -moz-box-shadow: #f86 14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      50% {
+        -moz-box-shadow: #f86 14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      58.33% {
+        -moz-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      66.67% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px -14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px -14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      75% {
+        -moz-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      83.33% {
+        -moz-box-shadow: #f86 14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae 14px 14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae 14px 14px 0 7px;
+      }
+      91.67% {
+        -moz-box-shadow: #f86 -14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      100% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+    }
+
+    @-webkit-keyframes dots-loader {
+      0% {
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      8.33% {
+        -webkit-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      16.67% {
+        -webkit-box-shadow: #f86 14px 14px 0 7px, #fc6 14px 14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 14px 14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      25% {
+        -webkit-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      33.33% {
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae -14px -14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae -14px -14px 0 7px;
+      }
+      41.67% {
+        -webkit-box-shadow: #f86 14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      50% {
+        -webkit-box-shadow: #f86 14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      58.33% {
+        -webkit-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      66.67% {
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px -14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px -14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      75% {
+        -webkit-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      83.33% {
+        -webkit-box-shadow: #f86 14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae 14px 14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae 14px 14px 0 7px;
+      }
+      91.67% {
+        -webkit-box-shadow: #f86 -14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      100% {
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+    }
+
+    @keyframes dots-loader {
+      0% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      8.33% {
+        -moz-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        -webkit-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      16.67% {
+        -moz-box-shadow: #f86 14px 14px 0 7px, #fc6 14px 14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        -webkit-box-shadow: #f86 14px 14px 0 7px, #fc6 14px 14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 14px 14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      25% {
+        -moz-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        -webkit-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      33.33% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae -14px -14px 0 7px;
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae -14px -14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae -14px -14px 0 7px;
+      }
+      41.67% {
+        -moz-box-shadow: #f86 14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        -webkit-box-shadow: #f86 14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      50% {
+        -moz-box-shadow: #f86 14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        -webkit-box-shadow: #f86 14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      58.33% {
+        -moz-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        -webkit-box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 -14px 14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      66.67% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px -14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px -14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 -14px -14px 0 7px,
+          #6d7 -14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      75% {
+        -moz-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        -webkit-box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px -14px 0 7px, #4ae 14px -14px 0 7px;
+        box-shadow: #f86 14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px -14px 0 7px, #4ae 14px -14px 0 7px;
+      }
+      83.33% {
+        -moz-box-shadow: #f86 14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae 14px 14px 0 7px;
+        -webkit-box-shadow: #f86 14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae 14px 14px 0 7px;
+        box-shadow: #f86 14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae 14px 14px 0 7px;
+      }
+      91.67% {
+        -moz-box-shadow: #f86 -14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        -webkit-box-shadow: #f86 -14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px 14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+      100% {
+        -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+        box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+          #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      }
+    }
+
+    .dots-loader:not(:required) {
+      overflow: hidden;
+      position: relative;
+      text-indent: -9999px;
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      background: transparent;
+      border-radius: 100%;
+      -moz-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+        #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      -webkit-box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+        #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      box-shadow: #f86 -14px -14px 0 7px, #fc6 14px -14px 0 7px,
+        #6d7 14px 14px 0 7px, #4ae -14px 14px 0 7px;
+      -moz-animation: dots-loader 5s infinite ease-in-out;
+      -webkit-animation: dots-loader 5s infinite ease-in-out;
+      animation: dots-loader 5s infinite ease-in-out;
+      -moz-transform-origin: 50% 50%;
+      -ms-transform-origin: 50% 50%;
+      -webkit-transform-origin: 50% 50%;
+      transform-origin: 50% 50%;
+    }
+  </style>
+  <body>
+    <div id="root">
+      <div style="position: absolute; left: 50%; top: 50%">
+        <div class="dots-loader"></div>
+      </div>
+
+      <!--    <div id="browser-upgrade">-->
+      <!--        <div class="title">为了您的体验，推荐使用以下浏览器</div>-->
+      <!--        <div class="browsers">-->
+      <!--            <a href="https://www.microsoft.com/edge" target="_blank" class="browser">-->
+      <!--                <img class="browser-icon" src="./browser_upgrade/edge.png"/>-->
+      <!--                <div class="browser-name">Mircosoft Edge</div>-->
+      <!--            </a>-->
+      <!--            <a href="https://www.google.cn/chrome/" target="_blank" class="browser">-->
+      <!--                <img class="browser-icon" src="./browser_upgrade/chrome.png"/>-->
+      <!--                <div class="browser-name">Google Chrome</div>-->
+      <!--            </a>-->
+      <!--        </div>-->
+      <!--    </div>-->
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

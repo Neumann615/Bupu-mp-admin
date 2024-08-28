@@ -1,0 +1,79 @@
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.infinite-rotate {
+    animation: rotate 2s linear infinite;
+}
+
+/*全局过度*/
+::view-transition-image-pair(root) {
+    isolation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+    display: block;
+}
+
+.ant-drawer-body {
+    overflow-x: hidden !important;
+}
+
+.ant-menu {
+    border-inline-end: none !important;
+}
+
+.text-ellipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.flex-sb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-start {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rc-slider-captcha-panel {
+    z-index: 9999;
+}
+
+
+.fade-exit {
+    opacity: 0;
+    transform: translateX(50px);
+    position: absolute;
+    overflow: hidden;
+}
+
+.fade-exit-active {
+    opacity: 1;
+    transform: translateX(0%);
+}
+
+.fade-enter-active,
+.fade-exit-active {
+    transition: all 3000ms;
+}
