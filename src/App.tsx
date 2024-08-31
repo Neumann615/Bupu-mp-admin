@@ -17,7 +17,6 @@ function RouteGuard(props) {
     }
 }
 
-//
 for (let i = 0; i < routes.length; i++) {
     if (routes[i].meta?.auth) {
         routes[i].element = <RouteGuard>{routes[i].element}</RouteGuard>

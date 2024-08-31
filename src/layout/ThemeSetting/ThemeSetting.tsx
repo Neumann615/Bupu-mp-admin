@@ -2,14 +2,16 @@ import {ColorPicker, FloatButton} from "antd"
 import {Icon} from "@/components"
 import {useThemeSettingStore, useThemeStore} from "@/store"
 import {themeColorList} from "@/utils"
-import {useEffect, useState} from "react"
+import {useRef, useState,} from "react"
+import {flushSync} from "react-dom";
 
 let lastClick
 
 export function ThemeSetting() {
     const [open, setOpen] = useState(false)
     const themeStore = useThemeStore()
-    const themeSettingStore = useThemeSettingStore()
+    const themeSettingStore: any = useThemeSettingStore()
+    const darkBtnRef = useRef<any>()
 
     function spaNavigate(e) {
         lastClick = event
@@ -32,6 +34,9 @@ export function ThemeSetting() {
         });
         // Wait for the pseudo-elements to be created:
         transition.ready.then(() => {
+            //const x = 0;
+            //const y = 0
+            console.log(x, y, endRadius)
             // Animate the root’s new view
             document.documentElement.animate(
                 {
@@ -50,6 +55,58 @@ export function ThemeSetting() {
         });
     }
 
+
+    function toggleDarkMode() {
+        /**
+         * Return early if View Transition API is not supported
+         * or user prefers reduced motion
+         */
+        console.log(darkBtnRef)
+        if (
+            !darkBtnRef.current ||
+            !document.startViewTransition
+        ) {
+            useThemeStore.setState({darkMode: !themeStore.darkMode})
+            return;
+        }
+        const {top, left, width, height} = darkBtnRef.current.getBoundingClientRect();
+        const x = left + width / 2;
+        const y = top + height / 2;
+        const right = window.innerWidth - left;
+        const bottom = window.innerHeight - top;
+        const maxRadius = Math.hypot(
+            Math.max(left, right),
+            Math.max(top, bottom),
+        );
+
+        const transition = document.startViewTransition(() => {
+            flushSync(() => {
+                useThemeStore.setState({darkMode: !themeStore.darkMode})
+            })
+        })
+        console.log(x, y)
+        transition.ready.then(() => {
+            let clipPath = [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${maxRadius}px at ${x}px ${y}px)`,
+            ]
+            let clipPath2 = [
+                `circle(${maxRadius}px at ${x}px ${y}px)`,
+                `circle(0px at ${x}px ${y}px)`,
+            ]
+            document.documentElement.animate(
+                {
+                    clipPath: !themeStore.darkMode ? clipPath : clipPath2
+                },
+                {
+                    duration: 2000,
+                    easing: 'ease-in',
+                    pseudoElement: '::view-transition-old(root)',
+                }
+            );
+        })
+    }
+
     return themeSettingStore.isEnable ? <FloatButton.Group
         onClick={() => {
             setOpen(!open)
@@ -63,19 +120,21 @@ export function ThemeSetting() {
         {themeSettingStore.isEnableThemeColor ?
             <FloatButton tooltip={<div>自定义主题色</div>}
                          icon={<ColorPicker
-                             onChange={(v: any) => {
-                                 useThemeStore.setState({themeColor: v.metaColor.originalInput})
+                             onChange={(v: any, color: string) => {
+                                 useThemeStore.setState({themeColor: color})
                              }}
                              arrow={false}
-                             default={themeStore.themeColor}
-                             placement={"left"}
+                             defaultValue={themeStore.themeColor}
+                             placement={"topLeft"}
                              presets={[{colors: themeColorList}]}
                              children={<Icon name={"Platte"}/>}></ColorPicker>}></FloatButton> : null}
         {themeSettingStore.isEnableDarkMode ?
             <FloatButton
+                ref={darkBtnRef}
                 tooltip={<div>暗黑模式</div>}
                 type={themeStore.darkMode ? "primary" : "default"}
-                onClick={spaNavigate} icon={<Icon name={"Moon"}/>}/> : null}
+                onClick={toggleDarkMode}
+                icon={<Icon name={"Moon"}/>}/> : null}
         {themeSettingStore.isEnableCompactMode ?
             <FloatButton
                 tooltip={<div>紧凑模式</div>}
