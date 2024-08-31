@@ -1,0 +1,26 @@
+/*全局过度*/
+::view-transition-image-pair(root) {
+    isolation: auto;
+}
+
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+    z-index: 999;
+}
+
+[theme="dark"]::view-transition-new(root) {
+    z-index: 999;
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+[theme="dark"]::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}

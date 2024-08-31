@@ -1,11 +1,10 @@
 import {ColorPicker, FloatButton} from "antd"
+import React, {useEffect, useRef, useState} from "react"
 import {Icon} from "@/components"
 import {useThemeSettingStore, useThemeStore} from "@/store"
 import {themeColorList} from "@/utils"
-import {useRef, useState,} from "react"
-import {flushSync} from "react-dom";
-
-let lastClick
+import {flushSync} from "react-dom"
+import "./view-transition.css"
 
 export function ThemeSetting() {
     const [open, setOpen] = useState(false)
@@ -13,78 +12,28 @@ export function ThemeSetting() {
     const themeSettingStore: any = useThemeSettingStore()
     const darkBtnRef = useRef<any>()
 
-    function spaNavigate(e) {
-        lastClick = event
-        // Fallback for browsers that don’t support this API:
-        if (!document.startViewTransition) {
-            useThemeStore.setState({darkMode: !themeStore.darkMode})
-            return;
-        }
-        // Get the click position, or fallback to the middle of the screen
-        const x = lastClick?.clientX ?? innerWidth / 2;
-        const y = lastClick?.clientY ?? innerHeight / 2;
-        // Get the distance to the furthest corner
-        const endRadius = Math.hypot(
-            Math.max(x, innerWidth - x),
-            Math.max(y, innerHeight - y),
-        );
-        // Create a transition:
-        const transition = document.startViewTransition(() => {
-            useThemeStore.setState({darkMode: !themeStore.darkMode})
-        });
-        // Wait for the pseudo-elements to be created:
-        transition.ready.then(() => {
-            //const x = 0;
-            //const y = 0
-            console.log(x, y, endRadius)
-            // Animate the root’s new view
-            document.documentElement.animate(
-                {
-                    clipPath: [
-                        `circle(0 at ${x}px ${y}px)`,
-                        `circle(${endRadius}px at ${x}px ${y}px)`,
-                    ],
-                },
-                {
-                    duration: 600,
-                    easing: "ease-in",
-                    // Specify which pseudo-element to animate
-                    pseudoElement: "::view-transition-new(root)",
-                },
-            );
-        });
-    }
-
-
     function toggleDarkMode() {
-        /**
-         * Return early if View Transition API is not supported
-         * or user prefers reduced motion
-         */
-        console.log(darkBtnRef)
         if (
             !darkBtnRef.current ||
             !document.startViewTransition
         ) {
             useThemeStore.setState({darkMode: !themeStore.darkMode})
-            return;
+            return
         }
-        const {top, left, width, height} = darkBtnRef.current.getBoundingClientRect();
-        const x = left + width / 2;
-        const y = top + height / 2;
-        const right = window.innerWidth - left;
-        const bottom = window.innerHeight - top;
+        const {top, left, width, height} = darkBtnRef.current.getBoundingClientRect()
+        const x = left + width / 2
+        const y = top + height / 2
+        const right = window.innerWidth - left
+        const bottom = window.innerHeight - top
         const maxRadius = Math.hypot(
             Math.max(left, right),
             Math.max(top, bottom),
-        );
-
+        )
         const transition = document.startViewTransition(() => {
             flushSync(() => {
                 useThemeStore.setState({darkMode: !themeStore.darkMode})
             })
         })
-        console.log(x, y)
         transition.ready.then(() => {
             let clipPath = [
                 `circle(0px at ${x}px ${y}px)`,
@@ -99,13 +48,21 @@ export function ThemeSetting() {
                     clipPath: !themeStore.darkMode ? clipPath : clipPath2
                 },
                 {
-                    duration: 2000,
+                    duration: 600,
                     easing: 'ease-in',
-                    pseudoElement: '::view-transition-old(root)',
+                    pseudoElement: !themeStore.darkMode ? '::view-transition-new(root)' : '::view-transition-old(root)',
                 }
-            );
+            )
         })
     }
+
+    useEffect(() => {
+        if (themeStore.darkMode) {
+            document.documentElement.setAttribute('theme', 'dark')
+        } else {
+            document.documentElement.removeAttribute('theme')
+        }
+    }, [themeStore.darkMode]);
 
     return themeSettingStore.isEnable ? <FloatButton.Group
         onClick={() => {

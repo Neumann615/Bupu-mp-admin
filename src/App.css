@@ -12,17 +12,6 @@
     animation: rotate 2s linear infinite;
 }
 
-/*全局过度*/
-::view-transition-image-pair(root) {
-    isolation: auto;
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
-}
-
 .ant-drawer-body {
     overflow-x: hidden !important;
 }
