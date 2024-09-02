@@ -1,9 +1,9 @@
 import {ColorPicker, FloatButton} from "antd"
 import React, {useEffect, useRef, useState} from "react"
+import {flushSync} from "react-dom"
 import {Icon} from "@/components"
 import {useThemeSettingStore, useThemeStore} from "@/store"
 import {themeColorList} from "@/utils"
-import {flushSync} from "react-dom"
 import "./view-transition.css"
 
 export function ThemeSetting() {

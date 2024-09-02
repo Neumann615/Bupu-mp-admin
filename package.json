@@ -1,7 +1,7 @@
 {
-  "name": "Bupu-admin",
+  "name": "Bupu-mp-admin",
   "private": false,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -14,6 +14,7 @@
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@amap/amap-jsapi-types": "^0.0.15",
     "@ant-design/charts": "^2.0.3",
+    "@ant-design/colors": "^7.1.0",
     "@ant-design/happy-work-theme": "^1.0.0",
     "@ant-design/icons": "^5.2.6",
     "@ant-design/plots": "^2.1.14",
