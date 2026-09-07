@@ -58,7 +58,6 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
   const { styles } = useStyles()
   const { setSchema, schema } = useDesignerStore()
   const rootRef = useRef<HTMLDivElement>(null)
-  const { addField, moveField } = useDesignerStore.getState()
 
   function handleDragEnd(event: DragEndEvent) {
     if (event.canceled)
@@ -67,6 +66,7 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
     const target = event.operation.target?.data as { parentId: string | null, index: number } | undefined
     if (!src || !target)
       return
+    const { addField, moveField } = useDesignerStore.getState()
     if (src.kind === 'palette' && src.type)
       addField(src.type, target)
     else if (src.kind === 'field' && src.id)

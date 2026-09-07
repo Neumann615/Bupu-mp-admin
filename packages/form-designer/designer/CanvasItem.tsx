@@ -26,6 +26,15 @@ const useStyles = createStyles(({ token, css }) => ({
     z-index: 1;
     cursor: default;
   `,
+  /**
+   * 容器子树包装层：z-index 高于自身 mask（z-index:1），使子项（含子项自身的
+   * mask/操作条）整棵子树压在父 mask 之上，子字段可点选；父 mask 仍覆盖容器
+   * 自身 padding/外壳区域用于选中容器。嵌套容器逐层复用同一规则。
+   */
+  children: css`
+    position: relative;
+    z-index: 2;
+  `,
   actions: css`
     position: absolute;
     top: -12px;
@@ -60,13 +69,16 @@ interface CanvasItemProps {
 
 export function CanvasItem({ node }: CanvasItemProps) {
   const { styles, cx } = useStyles()
-  const selectedId = useDesignerStore(s => s.selectedId)
+  // 布尔选择器：仅当选中态在当前项上进/出时才重渲染，避免选中切换扇出到全部 CanvasItem
+  const selected = useDesignerStore(s => s.selectedId === node.id)
   const select = useDesignerStore(s => s.select)
   const removeField = useDesignerStore(s => s.removeField)
   const duplicateField = useDesignerStore(s => s.duplicateField)
   const def = getComponent(node.type)
-  const selected = selectedId === node.id
 
+  // 拖拽激活区域随选中态变化属有意设计（formily 同款行为，勿当回归修复）：
+  // handleRef 未挂载时（未选中、操作条不渲染）整个字段可起拖；
+  // 选中后 handleRef 挂载到操作条手柄，仅手柄可拖，避免与字段输入区交互冲突。
   const { ref: dragRef, handleRef } = useDraggable({
     id: `field-${node.id}`,
     data: { kind: 'field', id: node.id },
@@ -95,7 +107,7 @@ export function CanvasItem({ node }: CanvasItemProps) {
   }
 
   const body = def.isContainer
-    ? def.render(node, renderChildren())
+    ? def.render(node, <div className={styles.children}>{renderChildren()}</div>)
     : def.noFormItem
       ? def.render(node)
       : (
