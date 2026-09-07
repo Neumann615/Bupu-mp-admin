@@ -1,0 +1,20 @@
+{
+  "name": "@zealous-admin/form-designer",
+  "type": "module",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    }
+  },
+  "peerDependencies": {
+    "@dnd-kit/react": "catalog:",
+    "antd": "catalog:",
+    "antd-style": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zustand": "catalog:"
+  }
+}

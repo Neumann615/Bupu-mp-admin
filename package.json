@@ -12,6 +12,7 @@
     "build": "vite build",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "test": "vitest run",
     "preview": "vite build && vite preview",
     "build:lib": "npm run build:lib:locales && npm run build:lib:components && npm run build:lib:layout && npm run build:lib:theme && npm run build:lib:utils",
     "build:lib:locales": "vite build --config packages/locales/vite.config.ts && tsc -p ./packages/locales/tsconfig.lib.json",
@@ -74,6 +75,7 @@
     "typescript": "catalog:",
     "vite": "^8.0.0",
     "vite-plugin-pages": "^0.33.3",
-    "vitepress": "^1.6.0"
+    "vitepress": "^1.6.0",
+    "vitest": "catalog:"
   }
 }

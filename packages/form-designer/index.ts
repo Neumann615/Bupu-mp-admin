@@ -1,0 +1,6 @@
+export { FormDesigner } from './designer/FormDesigner'
+export { getComponent, getMenus, registerComponent } from './registry/registry'
+export type { ComponentDef, ConfigMeta, MenuGroup } from './registry/registry'
+export { FormRenderer } from './renderer/FormRenderer'
+export type { FieldSchema, FormSchema, ValidateRule } from './types/schema'
+export { createEmptySchema } from './types/schema'
