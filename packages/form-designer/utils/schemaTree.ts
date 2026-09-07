@@ -51,7 +51,11 @@ export function removeNode(schema: FormSchema, id: string): FieldSchema | null {
   return located.node
 }
 
-/** 深拷贝节点并为整棵子树重新生成 id 与 field（用于复制） */
+/**
+ * 深拷贝节点并为整棵子树重新生成 id 与 field（用于复制）。
+ * 注意：field 会被重置为新 id（与节点 id 同值），原语义化 field 名不保留。
+ * 深拷贝基于 JSON 序列化，前提是 schema 可序列化（当前设计成立）。
+ */
 export function cloneNode(node: FieldSchema, genId: () => string): FieldSchema {
   const copy: FieldSchema = JSON.parse(JSON.stringify(node))
   const walk = (n: FieldSchema) => {
