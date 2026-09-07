@@ -16,7 +16,9 @@ export function ConfigFormRenderer({ node, metas }: ConfigFormRendererProps) {
 
   const renderControl = (meta: ConfigMeta) => {
     const value = getByPath(node as unknown as Record<string, any>, meta.field)
-    const onChange = (v: any) => updateField(node.id, meta.field, v)
+    // 文本类（含 options 编辑器）连续编辑合并撤销历史；number/switch/select 保持离散
+    const coalesce = meta.type === 'input' || meta.type === 'textarea' || meta.type === 'json' || meta.type === 'options'
+    const onChange = (v: any) => updateField(node.id, meta.field, v, coalesce)
     switch (meta.type) {
       case 'input':
         return <Input size="small" value={value ?? ''} onChange={e => onChange(e.target.value)} {...meta.props} />

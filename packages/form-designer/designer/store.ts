@@ -13,19 +13,23 @@ export interface DropTarget {
 }
 
 const HISTORY_LIMIT = 50
+/** 相同 coalesceKey 的连续编辑在该时间窗内合并为一条历史 */
+const COALESCE_WINDOW = 500
 
 interface DesignerState {
   schema: FormSchema
   selectedId: string | null
   past: FormSchema[]
   future: FormSchema[]
+  /** 内部：上一次带 coalesceKey 的写入记录，用于连续编辑合并；不参与序列化 */
+  lastCoalesce: { key: string, time: number } | null
   select: (id: string | null) => void
   addField: (type: string, target: DropTarget) => void
   moveField: (id: string, target: DropTarget) => void
   removeField: (id: string) => void
   duplicateField: (id: string) => void
-  /** 按点分路径更新字段属性，如 updateField(id, 'props.placeholder', '请输入') */
-  updateField: (id: string, path: string, value: any) => void
+  /** 按点分路径更新字段属性，如 updateField(id, 'props.placeholder', '请输入')；coalesce 为 true 时同字段连续编辑合并历史 */
+  updateField: (id: string, path: string, value: any, coalesce?: boolean) => void
   updateFormConfig: (patch: Partial<FormSchema['form']>) => void
   undo: () => void
   redo: () => void
@@ -41,16 +45,24 @@ function clone(schema: FormSchema): FormSchema {
 }
 
 export const useDesignerStore = create<DesignerState>((set, get) => {
-  /** 所有结构/属性变更走此入口：深拷贝 → 变更 → 推历史；fn 返回 false 表示中止（no-op，不推历史） */
-  const mutate = (fn: (draft: FormSchema) => void | false) => {
-    const { schema, past } = get()
+  /**
+   * 所有结构/属性变更走此入口：深拷贝 → 变更 → 推历史；fn 返回 false 表示中止（no-op，不推历史）。
+   * 传入 coalesceKey 时，若上次写入 key 相同且间隔 < 500ms，则不推新快照（连续编辑合并为一条历史）。
+   */
+  const mutate = (fn: (draft: FormSchema) => void | false, coalesceKey?: string) => {
+    const { schema, past, lastCoalesce } = get()
     const draft = clone(schema)
     if (fn(draft) === false)
       return
+    const now = Date.now()
+    const merge = coalesceKey !== undefined
+      && lastCoalesce?.key === coalesceKey
+      && now - lastCoalesce.time < COALESCE_WINDOW
     set({
       schema: draft,
-      past: [...past.slice(-(HISTORY_LIMIT - 1)), schema],
+      past: merge ? past : [...past.slice(-(HISTORY_LIMIT - 1)), schema],
       future: [],
+      lastCoalesce: coalesceKey === undefined ? null : { key: coalesceKey, time: now },
     })
   }
 
@@ -59,6 +71,7 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
     selectedId: null,
     past: [],
     future: [],
+    lastCoalesce: null,
 
     select: id => set({ selectedId: id }),
 
@@ -122,13 +135,13 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
       })
     },
 
-    updateField: (id, path, value) => {
+    updateField: (id, path, value, coalesce) => {
       mutate((draft) => {
         const located = findNode(draft.children, id)
         if (!located)
           return false
         setByPath(located.node as unknown as Record<string, any>, path, value)
-      })
+      }, coalesce ? `${id}:${path}` : undefined)
     },
 
     updateFormConfig: patch => mutate(draft => void Object.assign(draft.form, patch)),
@@ -142,6 +155,7 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
         past: past.slice(0, -1),
         future: [schema, ...future],
         selectedId: null,
+        lastCoalesce: null,
       })
     },
 
@@ -154,6 +168,7 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
         past: [...past, schema],
         future: future.slice(1),
         selectedId: null,
+        lastCoalesce: null,
       })
     },
 
@@ -183,7 +198,7 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
 
     exportSchema: () => JSON.stringify(get().schema, null, 2),
 
-    setSchema: schema => set({ schema, selectedId: null, past: [], future: [] }),
+    setSchema: schema => set({ schema, selectedId: null, past: [], future: [], lastCoalesce: null }),
 
     getSelected: () => {
       const { schema, selectedId } = get()

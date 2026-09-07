@@ -41,7 +41,7 @@ function FieldConfig() {
           <Divider titlePlacement="start" plain style={{ margin: '16px 0 12px' }}>校验规则</Divider>
           <ValidateEditor
             value={node.formItem?.rules}
-            onChange={rules => updateField(node.id, 'formItem.rules', rules)}
+            onChange={rules => updateField(node.id, 'formItem.rules', rules, true)}
           />
         </>
       )}

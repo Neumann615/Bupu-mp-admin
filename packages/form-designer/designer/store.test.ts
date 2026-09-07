@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { registerComponent } from '../registry/registry'
 import { createEmptySchema } from '../types/schema'
 import { useDesignerStore } from './store'
@@ -30,6 +30,7 @@ function reset() {
     selectedId: null,
     past: [],
     future: [],
+    lastCoalesce: null,
   })
 }
 
@@ -175,5 +176,80 @@ describe('designer store', () => {
     expect(store().schema.children).toHaveLength(1)
     expect(store().schema.form.layout).toBe('vertical')
     expect(store().schema.form.colon).toBe(true) // 默认值补齐
+  })
+
+  it('相同 coalesceKey 连续 updateField 合并为一条历史', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const id = store().schema.children[0].id
+    const before = store().past.length
+    store().updateField(id, 'props.placeholder', '请', true)
+    store().updateField(id, 'props.placeholder', '请输入', true)
+    expect(store().past.length).toBe(before + 1)
+    expect(store().schema.children[0].props.placeholder).toBe('请输入')
+  })
+
+  it('coalesce 后 undo 回到连续编辑前的状态', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const id = store().schema.children[0].id
+    store().updateField(id, 'props.placeholder', '请', true)
+    store().updateField(id, 'props.placeholder', '请输入', true)
+    store().undo()
+    expect(store().schema.children[0].props.placeholder).toBeUndefined()
+  })
+
+  it('不同 path 的 coalesce 各自推快照', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const id = store().schema.children[0].id
+    const before = store().past.length
+    store().updateField(id, 'label', '标题', true)
+    store().updateField(id, 'props.placeholder', '请输入', true)
+    expect(store().past.length).toBe(before + 2)
+  })
+
+  it('coalesce 与无 coalesce 操作交替时边界正常断开', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const id = store().schema.children[0].id
+    const before = store().past.length
+    store().updateField(id, 'label', 'a', true)
+    store().updateField(id, 'label', 'ab') // 无 coalesce：断开并推快照
+    store().updateField(id, 'label', 'abc', true) // 重新开启连续编辑：推快照
+    store().updateField(id, 'label', 'abcd', true) // 合并
+    expect(store().past.length).toBe(before + 3)
+    expect(store().schema.children[0].label).toBe('abcd')
+  })
+
+  it('undo 后再 coalesce 输入不与撤销前的编辑合并', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const id = store().schema.children[0].id
+    store().updateField(id, 'label', 'a', true)
+    store().undo()
+    expect(store().schema.children[0].label).toBe('输入框') // 回到默认
+    const before = store().past.length
+    store().updateField(id, 'label', 'b', true)
+    store().updateField(id, 'label', 'bc', true)
+    expect(store().past.length).toBe(before + 1)
+    store().undo()
+    expect(store().schema.children[0].label).toBe('输入框') // 撤销的是 undo 后的整段编辑
+  })
+
+  it('同 key 间隔 ≥500ms 推新快照，窗口内合并', () => {
+    vi.useFakeTimers()
+    try {
+      store().addField('input', { parentId: null, index: 0 })
+      const id = store().schema.children[0].id
+      const before = store().past.length
+      vi.setSystemTime(1000)
+      store().updateField(id, 'label', 'a', true)
+      vi.setSystemTime(1600) // 距上次 600ms ≥ 500ms
+      store().updateField(id, 'label', 'ab', true)
+      expect(store().past.length).toBe(before + 2)
+      vi.setSystemTime(1800) // 距上次 200ms < 500ms
+      store().updateField(id, 'label', 'abc', true)
+      expect(store().past.length).toBe(before + 2)
+      expect(store().schema.children[0].label).toBe('abc')
+    }
+    finally {
+      vi.useRealTimers()
+    }
   })
 })
