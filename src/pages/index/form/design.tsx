@@ -1,7 +1,7 @@
 import type { FormSchema } from '@zealous-admin/form-designer/index'
-import { FormDesigner } from '@zealous-admin/form-designer/index'
+import { createEmptySchema, FormDesigner } from '@zealous-admin/form-designer/index'
 import { useAppMessage } from '@zealous-admin/layout/index'
-import { Spin } from 'antd'
+import { Empty, Spin } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getFormDetailAPI, updateFormAPI } from '@/apis/form'
@@ -11,20 +11,29 @@ export default function FormDesignPage() {
   const [searchParams] = useSearchParams()
   const id = Number(searchParams.get('id'))
   const [loading, setLoading] = useState(!!id)
+  const [notFound, setNotFound] = useState(false)
   const [initialSchema, setInitialSchema] = useState<FormSchema>()
 
   useEffect(() => {
     if (!id)
       return
     getFormDetailAPI(id).then((res) => {
+      // 无条件重置设计器 store：空 schema 用空模板，避免画布残留上一张表单字段
       if (res.data.schema) {
         try {
           setInitialSchema(JSON.parse(res.data.schema))
         }
         catch {
           message.warning('已存 schema 解析失败，将重新设计')
+          setInitialSchema(createEmptySchema())
         }
       }
+      else {
+        setInitialSchema(createEmptySchema())
+      }
+    }).catch(() => {
+      message.error('表单加载失败')
+      setNotFound(true)
     }).finally(() => setLoading(false))
   }, [id])
 
@@ -35,6 +44,8 @@ export default function FormDesignPage() {
 
   if (loading)
     return <Spin style={{ display: 'block', margin: '120px auto' }} />
+  if (notFound)
+    return <Empty description="表单不存在或已被删除" style={{ marginTop: 120 }} />
 
   return (
     <div style={{ height: 'calc(100vh - 120px)' }}>
