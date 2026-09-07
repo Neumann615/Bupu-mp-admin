@@ -5,6 +5,7 @@ import { createStyles } from 'antd-style'
 import { useEffect, useRef } from 'react'
 import { Canvas } from './Canvas'
 import { LeftPanel } from './LeftPanel'
+import { RightPanel } from './RightPanel'
 import { useDesignerStore } from './store'
 import { Toolbar } from './Toolbar'
 import '../registry/components'
@@ -131,7 +132,7 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
         <div className={styles.body}>
           <div className={styles.left}><LeftPanel /></div>
           <div className={styles.canvas}><Canvas /></div>
-          <div className={styles.right}>{/* T7：RightPanel */}</div>
+          <div className={styles.right}><RightPanel /></div>
         </div>
       </DragDropProvider>
     </div>

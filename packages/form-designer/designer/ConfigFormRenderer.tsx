@@ -1,0 +1,65 @@
+import type { ConfigMeta } from '../registry/registry'
+import type { FieldSchema } from '../types/schema'
+import { Input, InputNumber, Select, Switch } from 'antd'
+import { getByPath } from '../utils/path'
+import { OptionsEditor } from './OptionsEditor'
+import { useDesignerStore } from './store'
+
+interface ConfigFormRendererProps {
+  node: FieldSchema
+  metas: ConfigMeta[]
+}
+
+/** 将组件声明的 configForm meta 渲染为配置控件（受控，直接写回 store） */
+export function ConfigFormRenderer({ node, metas }: ConfigFormRendererProps) {
+  const { updateField } = useDesignerStore()
+
+  const renderControl = (meta: ConfigMeta) => {
+    const value = getByPath(node as unknown as Record<string, any>, meta.field)
+    const onChange = (v: any) => updateField(node.id, meta.field, v)
+    switch (meta.type) {
+      case 'input':
+        return <Input size="small" value={value} onChange={e => onChange(e.target.value)} {...meta.props} />
+      case 'textarea':
+        return <Input.TextArea size="small" rows={2} value={value} onChange={e => onChange(e.target.value)} {...meta.props} />
+      case 'number':
+        return <InputNumber size="small" style={{ width: '100%' }} value={value} onChange={v => onChange(v)} {...meta.props} />
+      case 'switch':
+        return <Switch size="small" checked={!!value} onChange={onChange} {...meta.props} />
+      case 'select':
+        return <Select size="small" style={{ width: '100%' }} value={value} options={meta.options} onChange={onChange} allowClear {...meta.props} />
+      case 'options':
+        return <OptionsEditor value={value} onChange={onChange} />
+      case 'json':
+        return (
+          <Input.TextArea
+            size="small"
+            rows={4}
+            defaultValue={value ? JSON.stringify(value, null, 2) : ''}
+            onBlur={(e) => {
+              try {
+                onChange(JSON.parse(e.target.value))
+                e.target.style.borderColor = ''
+              }
+              catch {
+                e.target.style.borderColor = 'red'
+              }
+            }}
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {metas.map(meta => (
+        <div key={meta.field}>
+          <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>{meta.label}</div>
+          {renderControl(meta)}
+        </div>
+      ))}
+    </div>
+  )
+}
