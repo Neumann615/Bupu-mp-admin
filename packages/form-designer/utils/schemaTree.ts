@@ -1,3 +1,9 @@
+/**
+ * 字段树操作工具。
+ * 注意：本模块全部为 mutable API——findNode 返回树内引用，childrenOf 会为无 children 的
+ * 节点原地初始化空数组，removeNode 原地 splice。调用方必须先深拷贝 schema 再调用
+ * （设计器 store 的 mutate 入口负责克隆），禁止直接对 zustand state 使用。
+ */
 import type { FieldSchema, FormSchema } from '../types/schema'
 
 export interface LocatedNode {
@@ -59,7 +65,7 @@ export function cloneNode(node: FieldSchema, genId: () => string): FieldSchema {
   return copy
 }
 
-/** 判断 maybeDescendantId 是否在 node 的子树内（防止容器拖入自身） */
+/** 判断 maybeDescendantId 是否在 node 的子树内（严格后代，不含 node 自身；拖放到自身的判断需调用方另行处理） */
 export function isDescendant(node: FieldSchema, maybeDescendantId: string): boolean {
   if (!node.children)
     return false

@@ -88,3 +88,33 @@ describe('isDescendant', () => {
     expect(isDescendant(row, 'row')).toBe(false)
   })
 })
+
+describe('补充边界用例', () => {
+  it('findNode 空树返回 null', () => {
+    expect(findNode([], 'a')).toBeNull()
+  })
+
+  it('removeNode 未命中返回 null 且树不变', () => {
+    const schema = makeTree()
+    expect(removeNode(schema, 'zzz')).toBeNull()
+    expect(schema.children).toHaveLength(2)
+  })
+
+  it('removeNode 摘除根层节点', () => {
+    const schema = makeTree()
+    expect(removeNode(schema, 'a')?.id).toBe('a')
+    expect(schema.children.map(n => n.id)).toEqual(['row'])
+  })
+
+  it('childrenOf parentId 不存在返回 null', () => {
+    expect(childrenOf(makeTree(), 'zzz')).toBeNull()
+  })
+
+  it('cloneNode 深拷贝隔离：修改 copy 不影响原节点', () => {
+    const schema = makeTree()
+    const row = findNode(schema.children, 'row')!.node
+    const copy = cloneNode(row, () => 'x1')
+    copy.props.gutter = 99
+    expect(row.props.gutter).toBeUndefined()
+  })
+})

@@ -28,6 +28,7 @@ export interface FieldSchema {
   /** Form.Item 层面配置 */
   formItem?: {
     rules?: ValidateRule[]
+    required?: boolean
     tooltip?: string
     extra?: string
     hidden?: boolean
