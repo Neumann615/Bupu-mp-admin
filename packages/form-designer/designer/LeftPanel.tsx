@@ -52,7 +52,7 @@ export function LeftPanel() {
       return all
     const kw = keyword.trim().toLowerCase()
     return all
-      .map(g => ({ ...g, list: g.list.filter(d => d.title.toLowerCase().includes(kw) || d.type.includes(kw)) }))
+      .map(g => ({ ...g, list: g.list.filter(d => d.title.toLowerCase().includes(kw) || d.type.toLowerCase().includes(kw)) }))
       .filter(g => g.list.length > 0)
   }, [keyword])
 
