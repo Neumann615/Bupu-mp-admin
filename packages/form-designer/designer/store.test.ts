@@ -109,4 +109,71 @@ describe('designer store', () => {
     expect(store().importSchema('{bad json')).toBe(false)
     expect(store().importSchema('{"version":2,"children":[]}')).toBe(false)
   })
+
+  it('no-op 操作不推历史、不清 future', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    store().undo()
+    // 此时 future 有 1 条；执行 no-op（落点父节点不存在）
+    store().addField('input', { parentId: 'ghost', index: 0 })
+    store().removeField('ghost')
+    store().updateField('ghost', 'props.x', 1)
+    expect(store().past).toHaveLength(0) // undo 后为空，no-op 未新增
+    expect(store().future).toHaveLength(1) // redo 栈未被清
+    store().redo()
+    expect(store().schema.children).toHaveLength(1)
+  })
+
+  it('moveField 跨容器移动', () => {
+    store().addField('card', { parentId: null, index: 0 })
+    store().addField('input', { parentId: null, index: 1 })
+    const cardId = store().schema.children[0].id
+    const inputId = store().schema.children[1].id
+    store().moveField(inputId, { parentId: cardId, index: 0 })
+    expect(store().schema.children).toHaveLength(1)
+    expect(store().schema.children[0].children?.map(n => n.id)).toEqual([inputId])
+  })
+
+  it('moveField 同列表向前移动（下标不修正）', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    store().addField('input', { parentId: null, index: 1 })
+    store().addField('input', { parentId: null, index: 2 })
+    const [a, b, c] = store().schema.children.map(n => n.id)
+    store().moveField(c, { parentId: null, index: 0 }) // c 移到最前
+    expect(store().schema.children.map(n => n.id)).toEqual([c, a, b])
+  })
+
+  it('removeField 删除包含选中节点的容器后清空选中', () => {
+    store().addField('card', { parentId: null, index: 0 })
+    const cardId = store().schema.children[0].id
+    store().addField('input', { parentId: cardId, index: 0 })
+    const inputId = store().schema.children[0].children![0].id
+    store().select(inputId)
+    store().removeField(cardId)
+    expect(store().selectedId).toBeNull()
+  })
+
+  it('updateFormConfig 合并全局配置且可撤销', () => {
+    store().updateFormConfig({ layout: 'vertical' })
+    expect(store().schema.form.layout).toBe('vertical')
+    expect(store().schema.form.colon).toBe(true) // 其余配置保留
+    store().undo()
+    expect(store().schema.form.layout).toBe('horizontal')
+  })
+
+  it('importSchema 拒绝 form 为 null、过滤脏节点', () => {
+    expect(store().importSchema('{"version":1,"form":null,"children":[]}')).toBe(false)
+    const ok = store().importSchema(JSON.stringify({
+      version: 1,
+      form: { layout: 'vertical' },
+      children: [
+        { id: 'a', type: 'input', props: {} },
+        { type: 'input' }, // 缺 id，应被过滤
+        { id: 'b' }, // 缺 type，应被过滤
+      ],
+    }))
+    expect(ok).toBe(true)
+    expect(store().schema.children).toHaveLength(1)
+    expect(store().schema.form.layout).toBe('vertical')
+    expect(store().schema.form.colon).toBe(true) // 默认值补齐
+  })
 })

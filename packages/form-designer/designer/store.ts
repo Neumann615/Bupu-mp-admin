@@ -41,11 +41,12 @@ function clone(schema: FormSchema): FormSchema {
 }
 
 export const useDesignerStore = create<DesignerState>((set, get) => {
-  /** 所有结构/属性变更走此入口：深拷贝 → 变更 → 推历史 */
-  const mutate = (fn: (draft: FormSchema) => void) => {
+  /** 所有结构/属性变更走此入口：深拷贝 → 变更 → 推历史；fn 返回 false 表示中止（no-op，不推历史） */
+  const mutate = (fn: (draft: FormSchema) => void | false) => {
     const { schema, past } = get()
     const draft = clone(schema)
-    fn(draft)
+    if (fn(draft) === false)
+      return
     set({
       schema: draft,
       past: [...past.slice(-(HISTORY_LIMIT - 1)), schema],
@@ -68,7 +69,7 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
       mutate((draft) => {
         const list = childrenOf(draft, target.parentId)
         if (!list)
-          return
+          return false
         const node = def.defaultSchema()
         node.id = uniqueId()
         if (node.field)
@@ -86,24 +87,28 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
         return
       if (target.parentId && isDescendant(located.node, target.parentId))
         return // 不能拖入自身子树
-      // 同列表时记录摘除前的相对位置
-      const targetList = childrenOf(get().schema, target.parentId)
-      const sameList = targetList === located.parentChildren
       mutate((draft) => {
-        const node = removeNode(draft, id)
-        if (!node)
-          return
-        const list = childrenOf(draft, target.parentId)
-        if (!list)
-          return
-        const index = sameList && located.index < target.index ? target.index - 1 : target.index
+        // 摘除前先在 draft 内定位，记录同列表相对位置
+        const draftLocated = findNode(draft.children, id)
+        const draftTargetList = childrenOf(draft, target.parentId)
+        if (!draftLocated || !draftTargetList)
+          return false
+        const sameList = draftLocated.parentChildren === draftTargetList
+        const fromIndex = draftLocated.index
+        const node = removeNode(draft, id)!
+        const list = childrenOf(draft, target.parentId)!
+        const index = sameList && fromIndex < target.index ? target.index - 1 : target.index
         list.splice(Math.min(index, list.length), 0, node)
       })
     },
 
     removeField: (id) => {
-      mutate(draft => void removeNode(draft, id))
-      if (get().selectedId === id)
+      mutate((draft) => {
+        if (!removeNode(draft, id))
+          return false
+      })
+      // 删除的可能是包含选中节点的容器，统一校验选中态
+      if (get().selectedId && !findNode(get().schema.children, get().selectedId!))
         set({ selectedId: null })
     },
 
@@ -111,7 +116,7 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
       mutate((draft) => {
         const located = findNode(draft.children, id)
         if (!located)
-          return
+          return false
         const copy = cloneNode(located.node, uniqueId)
         located.parentChildren.splice(located.index + 1, 0, copy)
       })
@@ -120,12 +125,13 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
     updateField: (id, path, value) => {
       mutate((draft) => {
         const located = findNode(draft.children, id)
-        if (located)
-          setByPath(located.node as unknown as Record<string, any>, path, value)
+        if (!located)
+          return false
+        setByPath(located.node as unknown as Record<string, any>, path, value)
       })
     },
 
-    updateFormConfig: patch => mutate(draft => Object.assign(draft.form, patch)),
+    updateFormConfig: patch => mutate(draft => void Object.assign(draft.form, patch)),
 
     undo: () => {
       const { past, schema, future } = get()
@@ -158,7 +164,15 @@ export const useDesignerStore = create<DesignerState>((set, get) => {
         const parsed = JSON.parse(json)
         if (parsed?.version !== 1 || !Array.isArray(parsed.children))
           return false
-        mutate(draft => void Object.assign(draft, parsed))
+        if (parsed.form !== undefined && (typeof parsed.form !== 'object' || parsed.form === null))
+          return false
+        mutate((draft) => {
+          draft.form = { ...createEmptySchema().form, ...parsed.form }
+          // 过滤缺 id/type 的脏节点（深层递归校验留给后续）
+          draft.children = parsed.children.filter(
+            (c: any) => typeof c?.id === 'string' && typeof c?.type === 'string',
+          )
+        })
         set({ selectedId: null })
         return true
       }
