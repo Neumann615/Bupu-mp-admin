@@ -4,7 +4,6 @@ import { useDraggable } from '@dnd-kit/react'
 import { Form } from 'antd'
 import { createStyles } from 'antd-style'
 import { getComponent } from '../registry/registry'
-import { DropDirectionContext } from './dropDirectionContext'
 import { DropGap } from './DropGap'
 import { useDesignerStore } from './store'
 
@@ -86,20 +85,31 @@ export function CanvasItem({ node }: CanvasItemProps) {
     return <div className={styles.unknown}>{`未注册的组件类型：${node.type}`}</div>
   }
 
+  /**
+   * 水平布局容器（row，或非垂直的 space/flex）内，间隙落点切换为横向变体，
+   * 避免 8px 水平条成为占宽的 flex item 挤压栅格/间距。
+   * 垂直判定对齐 antd useOrientation 三参优先级：orientation > vertical > direction。
+   */
+  const horizontalDrops = node.type === 'row'
+    || ((node.type === 'space' || node.type === 'flex')
+      && !node.props.vertical
+      && node.props.direction !== 'vertical'
+      && node.props.orientation !== 'vertical')
+
   /** 容器子列表：交替渲染间隙落点与子项 */
   const renderChildren = () => {
     const kids = node.children ?? []
     if (!kids.length)
-      return <DropGap parentId={node.id} index={0} empty />
+      return <DropGap parentId={node.id} index={0} empty horizontal={horizontalDrops} />
     return (
       <>
         {kids.map((c, i) => (
           <span key={c.id} style={{ display: 'contents' }}>
-            <DropGap parentId={node.id} index={i} />
+            <DropGap parentId={node.id} index={i} horizontal={horizontalDrops} />
             <CanvasItem node={c} />
           </span>
         ))}
-        <DropGap parentId={node.id} index={kids.length} />
+        <DropGap parentId={node.id} index={kids.length} horizontal={horizontalDrops} />
       </>
     )
   }
@@ -107,25 +117,8 @@ export function CanvasItem({ node }: CanvasItemProps) {
   /** 画布渲染入口：组件可用 canvasRender 覆盖画布呈现（运行时仍走 render） */
   const render = def.canvasRender ?? def.render
 
-  /**
-   * 水平布局容器（row，或非垂直的 space/flex）内，间隙落点切换为横向变体，
-   * 避免 8px 水平条成为占宽的 flex item 挤压栅格/间距。
-   */
-  const horizontalDrops = node.type === 'row'
-    || ((node.type === 'space' || node.type === 'flex')
-      && !node.props.vertical && node.props.direction !== 'vertical')
-
   const body = def.isContainer
-    ? render(
-        node,
-        horizontalDrops
-          ? (
-              <DropDirectionContext value="horizontal">
-                {renderChildren()}
-              </DropDirectionContext>
-            )
-          : renderChildren(),
-      )
+    ? render(node, renderChildren())
     : def.noFormItem
       ? render(node)
       : (

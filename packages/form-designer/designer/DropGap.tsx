@@ -1,6 +1,5 @@
 import { useDroppable } from '@dnd-kit/react'
 import { createStyles } from 'antd-style'
-import { useDropDirection } from './dropDirectionContext'
 
 const useStyles = createStyles(({ token, css }) => ({
   // position/z-index：压在父容器 mask（z-index:1）之上，保持间隙可见可拖放
@@ -51,6 +50,13 @@ const useStyles = createStyles(({ token, css }) => ({
     color: ${token.colorTextTertiary};
     font-size: ${token.fontSizeSM}px;
   `,
+  /** 横向容器（row / 水平 space、flex）的空态落点：竖向块并拉伸交叉轴 */
+  emptyHorizontal: css`
+    width: 56px;
+    height: auto;
+    min-height: 56px;
+    align-self: stretch;
+  `,
   emptyActive: css`
     border-color: ${token.colorPrimary};
     color: ${token.colorPrimary};
@@ -63,11 +69,12 @@ interface DropGapProps {
   index: number
   /** 容器空态模式 */
   empty?: boolean
+  /** 横向容器（row / 水平 space、flex）内的落点变体 */
+  horizontal?: boolean
 }
 
-export function DropGap({ parentId, index, empty }: DropGapProps) {
+export function DropGap({ parentId, index, empty, horizontal }: DropGapProps) {
   const { styles, cx } = useStyles()
-  const direction = useDropDirection()
   const { ref, isDropTarget } = useDroppable({
     id: `gap-${parentId ?? 'root'}-${index}`,
     data: { parentId, index },
@@ -75,13 +82,20 @@ export function DropGap({ parentId, index, empty }: DropGapProps) {
 
   if (empty) {
     return (
-      <div ref={ref} className={cx(styles.empty, isDropTarget && styles.emptyActive)}>
+      <div
+        ref={ref}
+        className={cx(
+          styles.empty,
+          isDropTarget && styles.emptyActive,
+          horizontal && styles.emptyHorizontal,
+        )}
+      >
         拖拽组件到此处
       </div>
     )
   }
   // 横向：droppable ref 挂在内层命中层上（根 0 宽，碰撞矩形需非零宽高）
-  if (direction === 'horizontal') {
+  if (horizontal) {
     return (
       <div className={styles.hGap}>
         <div ref={ref} className={cx(styles.hHit, isDropTarget && styles.hActive)} />
