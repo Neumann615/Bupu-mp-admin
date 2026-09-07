@@ -1,24 +1,9 @@
-import type { Rule } from 'antd/es/form'
 import type { ReactNode } from 'react'
-import type { FieldSchema, ValidateRule } from '../types/schema'
+import type { FieldSchema } from '../types/schema'
 import { Alert, Form } from 'antd'
 import { getComponent } from '../registry/registry'
+import { toAntdRules } from './toAntdRules'
 import '../registry/components'
-
-function toAntdRules(schema: FieldSchema): Rule[] {
-  const rules = schema.formItem?.rules ?? []
-  return rules.map((r: ValidateRule): Rule => {
-    const label = schema.label || '该字段'
-    switch (r.type) {
-      case 'required':
-        return { required: true, message: r.message || `${label}不能为空` }
-      case 'regexp':
-        return { pattern: new RegExp(r.pattern || ''), message: r.message || `${label}格式不正确` }
-      default:
-        return { type: r.type as 'email' | 'url' | 'number', message: r.message || `${label}格式不正确` }
-    }
-  })
-}
 
 /**
  * 渲染单个字段。容器类通过 renderChild 递归子节点，
