@@ -1,6 +1,9 @@
+import type { DragEndEvent } from '@dnd-kit/react'
 import type { FormSchema } from '../types/schema'
+import { DragDropProvider } from '@dnd-kit/react'
 import { createStyles } from 'antd-style'
 import { useEffect, useRef } from 'react'
+import { Canvas } from './Canvas'
 import { LeftPanel } from './LeftPanel'
 import { useDesignerStore } from './store'
 import { Toolbar } from './Toolbar'
@@ -55,6 +58,20 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
   const { styles } = useStyles()
   const { setSchema, schema } = useDesignerStore()
   const rootRef = useRef<HTMLDivElement>(null)
+  const { addField, moveField } = useDesignerStore.getState()
+
+  function handleDragEnd(event: DragEndEvent) {
+    if (event.canceled)
+      return
+    const src = event.operation.source?.data as { kind?: string, type?: string, id?: string } | undefined
+    const target = event.operation.target?.data as { parentId: string | null, index: number } | undefined
+    if (!src || !target)
+      return
+    if (src.kind === 'palette' && src.type)
+      addField(src.type, target)
+    else if (src.kind === 'field' && src.id)
+      moveField(src.id, target)
+  }
 
   // 外部 schema 装载：initialSchema 身份变化时重新装载（消费方切换表单时应传入新对象；
   // 若父组件复用同一对象引用则不触发——同实例切换表单的推荐做法是传 key={表单id}）
@@ -110,11 +127,13 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
       <div className={styles.toolbar}>
         <Toolbar onSave={onSave ? () => onSave(schema) : undefined} />
       </div>
-      <div className={styles.body}>
-        <div className={styles.left}><LeftPanel /></div>
-        <div className={styles.canvas}>{/* T6：Canvas */}</div>
-        <div className={styles.right}>{/* T7：RightPanel */}</div>
-      </div>
+      <DragDropProvider onDragEnd={handleDragEnd}>
+        <div className={styles.body}>
+          <div className={styles.left}><LeftPanel /></div>
+          <div className={styles.canvas}><Canvas /></div>
+          <div className={styles.right}>{/* T7：RightPanel */}</div>
+        </div>
+      </DragDropProvider>
     </div>
   )
 }
