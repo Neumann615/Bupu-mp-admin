@@ -37,6 +37,17 @@ registerComponent({
   isContainer: true,
   defaultSchema: () => bareSchema('col', { span: 12 }, []),
   render: (schema, children) => <Col {...schema.props}>{children}</Col>,
+  // 画布中 Col 被 CanvasItem 外壳（.item）包裹，外壳才是 Row 的 flex item：
+  // span 换算成外壳的 flex 尺寸，Col 自身在画布内恒为 span:24 占满外壳
+  canvasShellStyle: (schema) => {
+    const span = schema.props.span ?? 24
+    const pct = `${(span / 24) * 100}%`
+    return { flex: `0 0 ${pct}`, maxWidth: pct }
+  },
+  canvasRender: (schema, children) => {
+    const { span, ...rest } = schema.props
+    return <Col span={24} {...rest}>{children}</Col>
+  },
   configForm: [
     { field: 'props.span', label: '宽度（1-24）', type: 'number', props: { min: 1, max: 24 } },
   ],
@@ -211,7 +222,7 @@ registerComponent({
   defaultSchema: () => bareSchema('descriptions', { title: '描述列表', bordered: true, column: 2 }, []),
   render: (schema, children) => {
     // 运行时 children 是与 schema.children 顺序对齐的数组，按 items 一一映射；
-    // 画布模式 children 是 CanvasItem 传入的单个包装 div（含 DropGap），无法拆分到各 item，
+    // 画布模式 children 是 CanvasItem 传入的单个 React 节点（含 DropGap），无法拆分到各 item，
     // 退化为单个 item 整体呈现——空态时落点在 item 内可插入，非空时 items 映射失真属计划约定的已知限制。
     const items = Array.isArray(children)
       ? (schema.children ?? []).map((c, i) => ({

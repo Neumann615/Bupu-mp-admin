@@ -4,12 +4,19 @@ import { useDraggable } from '@dnd-kit/react'
 import { Form } from 'antd'
 import { createStyles } from 'antd-style'
 import { getComponent } from '../registry/registry'
+import { DropDirectionContext } from './dropDirectionContext'
 import { DropGap } from './DropGap'
 import { useDesignerStore } from './store'
 
 const useStyles = createStyles(({ token, css }) => ({
+  /**
+   * z-index:2 使子项整棵子树压在父 mask（z-index:1，inset:0 覆盖父 item 全区）
+   * 之上，子字段可点选；父 padding/外壳区仍命中父 mask 用于选中容器。
+   * 嵌套容器逐层复用同一规则；根级 item 无父 mask，z-2 无害。
+   */
   item: css`
     position: relative;
+    z-index: 2;
     border: 1px dashed transparent;
     border-radius: ${token.borderRadius}px;
     padding: 2px;
@@ -25,15 +32,6 @@ const useStyles = createStyles(({ token, css }) => ({
     inset: 0;
     z-index: 1;
     cursor: default;
-  `,
-  /**
-   * 容器子树包装层：z-index 高于自身 mask（z-index:1），使子项（含子项自身的
-   * mask/操作条）整棵子树压在父 mask 之上，子字段可点选；父 mask 仍覆盖容器
-   * 自身 padding/外壳区域用于选中容器。嵌套容器逐层复用同一规则。
-   */
-  children: css`
-    position: relative;
-    z-index: 2;
   `,
   actions: css`
     position: absolute;
@@ -106,10 +104,30 @@ export function CanvasItem({ node }: CanvasItemProps) {
     )
   }
 
+  /** 画布渲染入口：组件可用 canvasRender 覆盖画布呈现（运行时仍走 render） */
+  const render = def.canvasRender ?? def.render
+
+  /**
+   * 水平布局容器（row，或非垂直的 space/flex）内，间隙落点切换为横向变体，
+   * 避免 8px 水平条成为占宽的 flex item 挤压栅格/间距。
+   */
+  const horizontalDrops = node.type === 'row'
+    || ((node.type === 'space' || node.type === 'flex')
+      && !node.props.vertical && node.props.direction !== 'vertical')
+
   const body = def.isContainer
-    ? def.render(node, <div className={styles.children}>{renderChildren()}</div>)
+    ? render(
+        node,
+        horizontalDrops
+          ? (
+              <DropDirectionContext value="horizontal">
+                {renderChildren()}
+              </DropDirectionContext>
+            )
+          : renderChildren(),
+      )
     : def.noFormItem
-      ? def.render(node)
+      ? render(node)
       : (
           <Form.Item
             label={node.label}
@@ -117,7 +135,7 @@ export function CanvasItem({ node }: CanvasItemProps) {
             tooltip={node.formItem?.tooltip}
             extra={node.formItem?.extra}
           >
-            {def.render(node)}
+            {render(node)}
           </Form.Item>
         )
 
@@ -125,6 +143,7 @@ export function CanvasItem({ node }: CanvasItemProps) {
     <div
       ref={dragRef}
       className={cx(styles.item, selected && styles.selected)}
+      style={def.canvasShellStyle?.(node)}
       onClick={(e) => {
         e.stopPropagation()
         select(node.id)

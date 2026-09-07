@@ -14,8 +14,8 @@ export interface FormRendererProps {
 export function FormRenderer({ schema, initialValues, onSubmit, showActions = true }: FormRendererProps) {
   const [form] = Form.useForm()
 
-  const renderChild = (child: FieldSchema): React.ReactNode => (
-    <Fragment key={child.id}>{renderField(child, renderChild)}</Fragment>
+  const renderChild = (child: FieldSchema, parentType?: string): React.ReactNode => (
+    <Fragment key={child.id}>{renderField(child, renderChild, parentType)}</Fragment>
   )
 
   return (
@@ -25,7 +25,7 @@ export function FormRenderer({ schema, initialValues, onSubmit, showActions = tr
       onFinish={onSubmit}
       {...schema.form}
     >
-      {schema.children.map(renderChild)}
+      {schema.children.map(c => renderChild(c))}
       {showActions && (
         <Form.Item wrapperCol={schema.form.layout === 'horizontal' ? { offset: 4 } : undefined}>
           <Space>

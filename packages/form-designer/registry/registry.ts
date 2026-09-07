@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { FieldSchema } from '../types/schema'
 
 export type MenuGroup = 'main' | 'aide' | 'layout'
@@ -30,6 +30,10 @@ export interface ComponentDef {
   defaultSchema: () => FieldSchema
   /** children 为已渲染好的子节点（容器类使用） */
   render: (schema: FieldSchema, children?: ReactNode) => ReactNode
+  /** 画布模式：CanvasItem 外壳需要镜像的布局样式（如 col 的 span 转 flex 尺寸） */
+  canvasShellStyle?: (schema: FieldSchema) => CSSProperties
+  /** 画布模式：替代 render 的渲染（如 col 在画布内渲染 span:24 占满外壳） */
+  canvasRender?: (schema: FieldSchema, children?: ReactNode) => ReactNode
   configForm: ConfigMeta[]
 }
 
