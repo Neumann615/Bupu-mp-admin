@@ -6,10 +6,10 @@
 
 **架构：** 声明式组件注册表（每个组件一个定义：defaultSchema + render + configForm）；Zustand 管理 schema 树与撤销重做快照；`@dnd-kit/react` 拖拽（间隙落点 DropGap 方案）；渲染器 `FormRenderer` 同时服务画布、预览与业务运行时。
 
-**技术栈：** React 19 + antd 6 + antd-style + Zustand + `@dnd-kit/react@0.5.0`（全部现有依赖，零新增）。
+**技术栈：** React 19 + antd 6 + antd-style + Zustand + `@dnd-kit/react@0.5.0`（运行时零新增依赖）；Vitest（devDependency，纯逻辑单测）。
 
 **与规格的偏差说明：**
-- 项目无 Vitest 设施且用户要求零新增依赖 → 测试改为：每个任务 `pnpm lint` + 开发服务器手动验收，阶段验收按规格第 8 节执行。
+- 项目原无 Vitest 设施 → 新增 devDependency `vitest`（仅开发依赖），`utils/` 与 `designer/store.ts` 的纯逻辑走 TDD；UI 交互仍为 `pnpm lint` + 分阶段手动验收。
 - CLAUDE.md 称后端为 Hono + Drizzle + MySQL，**实际现状是 Express + node:sqlite**（`service/src/db/index.ts`，`za_*` 表，路由在 `service/src/routes/`）。本计划按现状编写。
 - 菜单由后端 `za_menu` 表 + `za_role_menu_relation` 角色绑定驱动，需随 P4 做幂等迁移插入。
 - 设计/渲染页通过 query 参数（`/form/design?id=1`）而非动态路由段传 id，避免引入动态路由配置。
@@ -70,7 +70,7 @@ src/pages/index/form/render.tsx     # T12
 
 ---
 
-## 任务 1：包骨架 + Schema 类型 + 工具函数
+## 任务 1：包骨架 + Schema 类型 + 工具函数（TDD）
 
 **文件：**
 - 创建：`packages/form-designer/package.json`
@@ -79,6 +79,21 @@ src/pages/index/form/render.tsx     # T12
 - 创建：`packages/form-designer/utils/uniqueId.ts`
 - 创建：`packages/form-designer/utils/schemaTree.ts`
 - 创建：`packages/form-designer/utils/path.ts`
+- 测试：`packages/form-designer/utils/schemaTree.test.ts`
+- 测试：`packages/form-designer/utils/path.test.ts`
+- 修改：根 `package.json`（加 `test` 脚本）
+
+- [ ] **步骤 0：安装 Vitest（仅开发依赖）**
+
+```bash
+pnpm add -Dw vitest
+```
+
+根 `package.json` scripts 加入：
+
+```json
+"test": "vitest run"
+```
 
 - [ ] **步骤 1：创建 package.json**
 
@@ -266,6 +281,134 @@ export function setByPath(obj: Record<string, any>, path: string, value: any): v
   target[keys[keys.length - 1]] = value
 }
 ```
+
+- [ ] **步骤 5b：创建 utils/schemaTree.test.ts**
+
+```ts
+import type { FieldSchema, FormSchema } from '../types/schema'
+import { describe, expect, it } from 'vitest'
+import { createEmptySchema } from '../types/schema'
+import { childrenOf, cloneNode, findNode, isDescendant, removeNode } from './schemaTree'
+
+function makeTree(): FormSchema {
+  const schema = createEmptySchema()
+  schema.children = [
+    { id: 'a', type: 'input', field: 'fa', label: 'A', props: {} },
+    {
+      id: 'row', type: 'row', props: {},
+      children: [
+        { id: 'b', type: 'input', field: 'fb', label: 'B', props: {} },
+        { id: 'c', type: 'input', field: 'fc', label: 'C', props: {} },
+      ],
+    },
+  ]
+  return schema
+}
+
+describe('findNode', () => {
+  it('能找到根层节点并给出父列表与下标', () => {
+    const schema = makeTree()
+    const located = findNode(schema.children, 'a')
+    expect(located?.node.id).toBe('a')
+    expect(located?.index).toBe(0)
+    expect(located?.parentChildren).toBe(schema.children)
+  })
+
+  it('能找到嵌套节点', () => {
+    const schema = makeTree()
+    const located = findNode(schema.children, 'c')
+    expect(located?.node.id).toBe('c')
+    expect(located?.index).toBe(1)
+    expect(located?.parentChildren.map(n => n.id)).toEqual(['b', 'c'])
+  })
+
+  it('找不到时返回 null', () => {
+    expect(findNode(makeTree().children, 'zzz')).toBeNull()
+  })
+})
+
+describe('childrenOf', () => {
+  it('parentId 为 null 时返回根 children', () => {
+    const schema = makeTree()
+    expect(childrenOf(schema, null)).toBe(schema.children)
+  })
+
+  it('容器无 children 时初始化为空数组', () => {
+    const schema = makeTree()
+    schema.children.push({ id: 'card', type: 'card', props: {} })
+    const list = childrenOf(schema, 'card')
+    expect(list).toEqual([])
+  })
+})
+
+describe('removeNode', () => {
+  it('摘除嵌套节点并返回该节点', () => {
+    const schema = makeTree()
+    const removed = removeNode(schema, 'b')
+    expect(removed?.id).toBe('b')
+    expect(findNode(schema.children, 'row')?.node.children?.map(n => n.id)).toEqual(['c'])
+  })
+})
+
+describe('cloneNode', () => {
+  it('深拷贝并为整棵子树生成新 id/field', () => {
+    const schema = makeTree()
+    const row = findNode(schema.children, 'row')!.node
+    let seq = 0
+    const copy = cloneNode(row, () => `new${seq++}`)
+    expect(copy.id).toBe('new0')
+    expect(copy.children!.map(c => c.id)).toEqual(['new1', 'new2'])
+    expect(copy.children!.map(c => c.field)).toEqual(['new1', 'new2'])
+    // 原节点不受影响
+    expect(row.id).toBe('row')
+  })
+})
+
+describe('isDescendant', () => {
+  it('识别子树内节点', () => {
+    const schema = makeTree()
+    const row = findNode(schema.children, 'row')!.node
+    expect(isDescendant(row, 'c')).toBe(true)
+    expect(isDescendant(row, 'a')).toBe(false)
+    expect(isDescendant(row, 'row')).toBe(false)
+  })
+})
+```
+
+- [ ] **步骤 5c：创建 utils/path.test.ts**
+
+```ts
+import { describe, expect, it } from 'vitest'
+import { getByPath, setByPath } from './path'
+
+describe('getByPath', () => {
+  it('按点分路径读取', () => {
+    const obj = { props: { placeholder: 'x' }, label: 'y' }
+    expect(getByPath(obj, 'props.placeholder')).toBe('x')
+    expect(getByPath(obj, 'label')).toBe('y')
+    expect(getByPath(obj, 'props.missing.deep')).toBeUndefined()
+  })
+})
+
+describe('setByPath', () => {
+  it('按点分路径写入，自动创建中间对象', () => {
+    const obj: Record<string, any> = {}
+    setByPath(obj, 'formItem.tooltip', '提示')
+    expect(obj).toEqual({ formItem: { tooltip: '提示' } })
+  })
+
+  it('覆盖已有值', () => {
+    const obj = { props: { maxLength: 10 } }
+    setByPath(obj, 'props.maxLength', 20)
+    expect(obj.props.maxLength).toBe(20)
+  })
+})
+```
+
+- [ ] **步骤 5d：运行测试确认通过**
+
+运行：`pnpm test`
+预期：2 个测试文件全部 PASS（实现已在步骤 2–5 给出；若 FAIL 先修实现再往下走）
 
 - [ ] **步骤 6：创建 index.ts（初始导出，后续任务追加）**
 
@@ -504,10 +647,11 @@ git commit -m "feat: 组件注册表与 FormRenderer 渲染器"
 
 ---
 
-## 任务 3：设计器状态 store（schema 树 + 撤销重做）
+## 任务 3：设计器状态 store（schema 树 + 撤销重做，TDD）
 
 **文件：**
 - 创建：`packages/form-designer/designer/store.ts`
+- 测试：`packages/form-designer/designer/store.test.ts`
 
 - [ ] **步骤 1：创建 designer/store.ts**
 
@@ -736,11 +880,133 @@ if (!list) return
     },
 ```
 
+- [ ] **步骤 2b：创建 designer/store.test.ts**
+
+```ts
+import { beforeEach, describe, expect, it } from 'vitest'
+import { registerComponent } from '../registry/registry'
+import { createEmptySchema } from '../types/schema'
+import { useDesignerStore } from './store'
+
+// 注册测试用组件
+registerComponent({
+  type: 'input',
+  title: '输入框',
+  menu: 'main',
+  icon: null,
+  defaultSchema: () => ({ id: 'x', type: 'input', field: 'fx', label: '输入框', props: {} }),
+  render: () => null,
+  configForm: [],
+})
+registerComponent({
+  type: 'card',
+  title: '卡片',
+  menu: 'layout',
+  icon: null,
+  isContainer: true,
+  defaultSchema: () => ({ id: 'x', type: 'card', props: {}, children: [] }),
+  render: () => null,
+  configForm: [],
+})
+
+function reset() {
+  useDesignerStore.setState({
+    schema: createEmptySchema(),
+    selectedId: null,
+    past: [],
+    future: [],
+  })
+}
+
+const store = () => useDesignerStore.getState()
+
+describe('designer store', () => {
+  beforeEach(reset)
+
+  it('addField 向根列表插入字段并选中', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    expect(store().schema.children).toHaveLength(1)
+    expect(store().schema.children[0].type).toBe('input')
+    expect(store().schema.children[0].id).not.toBe('x') // 重新生成
+    expect(store().schema.children[0].field).not.toBe('fx')
+    expect(store().selectedId).toBe(store().schema.children[0].id)
+  })
+
+  it('addField 向容器内插入', () => {
+    store().addField('card', { parentId: null, index: 0 })
+    const cardId = store().schema.children[0].id
+    store().addField('input', { parentId: cardId, index: 0 })
+    expect(store().schema.children[0].children).toHaveLength(1)
+  })
+
+  it('moveField 同列表排序（移到后方时下标修正）', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    store().addField('input', { parentId: null, index: 1 })
+    store().addField('input', { parentId: null, index: 2 })
+    const [a, b, c] = store().schema.children.map(n => n.id)
+    store().moveField(a, { parentId: null, index: 3 }) // a 移到末尾
+    expect(store().schema.children.map(n => n.id)).toEqual([b, c, a])
+  })
+
+  it('moveField 拒绝拖入自身子树', () => {
+    store().addField('card', { parentId: null, index: 0 })
+    const cardId = store().schema.children[0].id
+    store().addField('card', { parentId: cardId, index: 0 })
+    const innerId = store().schema.children[0].children![0].id
+    store().moveField(cardId, { parentId: innerId, index: 0 })
+    expect(store().schema.children[0].id).toBe(cardId) // 未变化
+  })
+
+  it('removeField / duplicateField', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const id = store().schema.children[0].id
+    store().duplicateField(id)
+    expect(store().schema.children).toHaveLength(2)
+    expect(store().schema.children[1].id).not.toBe(id)
+    store().removeField(id)
+    expect(store().schema.children).toHaveLength(1)
+  })
+
+  it('updateField 按路径写回并产生历史', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const id = store().schema.children[0].id
+    store().updateField(id, 'props.placeholder', '请输入')
+    expect(store().schema.children[0].props.placeholder).toBe('请输入')
+    expect(store().past.length).toBeGreaterThan(0)
+  })
+
+  it('undo/redo 往返', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    expect(store().schema.children).toHaveLength(1)
+    store().undo()
+    expect(store().schema.children).toHaveLength(0)
+    store().redo()
+    expect(store().schema.children).toHaveLength(1)
+  })
+
+  it('导出导入往返一致，非法 JSON 导入返回 false', () => {
+    store().addField('input', { parentId: null, index: 0 })
+    const json = store().exportSchema()
+    store().clear()
+    expect(store().schema.children).toHaveLength(0)
+    expect(store().importSchema(json)).toBe(true)
+    expect(store().schema.children).toHaveLength(1)
+    expect(store().importSchema('{bad json')).toBe(false)
+    expect(store().importSchema('{"version":2,"children":[]}')).toBe(false)
+  })
+})
+```
+
+- [ ] **步骤 2c：运行测试确认通过**
+
+运行：`pnpm test`
+预期：schemaTree/path/store 三个测试文件全部 PASS
+
 - [ ] **步骤 3：Commit**
 
 ```bash
-git add packages/form-designer/designer/store.ts
-git commit -m "feat: 设计器 store（schema 树操作 + 撤销重做）"
+git add packages/form-designer/designer
+git commit -m "feat: 设计器 store（schema 树操作 + 撤销重做，含单测）"
 ```
 
 ---
