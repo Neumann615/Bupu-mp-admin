@@ -21,9 +21,8 @@ export function renderField(
   if (def.isContainer)
     return def.render(schema, (schema.children ?? []).map(c => renderChild(c)))
 
-  const control = def.render(schema)
   if (def.noFormItem)
-    return control
+    return def.render(schema)
 
   return (
     <Form.Item

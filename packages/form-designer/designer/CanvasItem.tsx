@@ -111,7 +111,12 @@ export function CanvasItem({ node }: CanvasItemProps) {
     : def.noFormItem
       ? def.render(node)
       : (
-          <Form.Item label={node.label} required={node.formItem?.rules?.some(r => r.type === 'required')}>
+          <Form.Item
+            label={node.label}
+            required={node.formItem?.rules?.some(r => r.type === 'required')}
+            tooltip={node.formItem?.tooltip}
+            extra={node.formItem?.extra}
+          >
             {def.render(node)}
           </Form.Item>
         )
