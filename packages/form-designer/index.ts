@@ -1,4 +1,5 @@
-// FormDesigner 将在后续任务补充导出
+export { FormDesigner } from './designer/FormDesigner'
+export type { FormDesignerProps } from './designer/FormDesigner'
 export { getComponent, getMenus, registerComponent } from './registry/registry'
 export type { ComponentDef, ConfigMeta, MenuGroup } from './registry/registry'
 export { FormRenderer } from './renderer/FormRenderer'
