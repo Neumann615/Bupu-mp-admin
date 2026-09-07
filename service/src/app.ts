@@ -2,6 +2,7 @@ import cors from 'cors'
 import express from 'express'
 import adminRoutes from './routes/admin'
 import dictRoutes from './routes/dict'
+import formRoutes from './routes/form'
 import mcpRoutes from './routes/mcp'
 import menuRoutes from './routes/menu'
 import roleRoutes from './routes/role'
@@ -20,6 +21,7 @@ app.use('/', adminRoutes)
 app.use('/', roleRoutes)
 app.use('/', menuRoutes)
 app.use('/', dictRoutes)
+app.use('/', formRoutes)
 
 app.get('/', (_req, res) => {
   res.json({ message: 'Zealous Admin Service is running!' })

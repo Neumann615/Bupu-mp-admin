@@ -95,6 +95,19 @@ export function initDb() {
     )
   `)
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS za_form (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      description TEXT,
+      schema TEXT,
+      status INTEGER DEFAULT 0,
+      version INTEGER DEFAULT 1,
+      create_time TEXT,
+      update_time TEXT
+    )
+  `)
+
   const row = db.prepare('SELECT id FROM za_admin WHERE username = ?').get('admin')
   if (!row) {
     const nowStr = now()
@@ -270,6 +283,26 @@ export function initDb() {
     )
     insertAdminRole.run(1, 1) // admin → 超级管理员
     insertAdminRole.run(2, 2) // test → 演示测试员
+  }
+
+  // 幂等迁移：表单设计菜单（老库补充，空库 seed 后也会执行，靠 path 判重）
+  const existFormMenu = db.prepare('SELECT id FROM za_menu WHERE path = ?').get('/form/list')
+  if (!existFormMenu) {
+    const nowStr = now()
+    const parent = db.prepare(
+      'INSERT INTO za_menu (parent_id, title, level, sort, name, icon, hidden, create_time, path, active_icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    ).run(0, '表单设计', 0, 90, 'form', 'ai:AiOutlineForm', 0, nowStr, '/form', null)
+    const pid = Number(parent.lastInsertRowid)
+    const child = db.prepare(
+      'INSERT INTO za_menu (parent_id, title, level, sort, name, icon, hidden, create_time, path, active_icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    ).run(pid, '表单管理', 1, 0, 'list', 'ai:AiOutlineUnorderedList', 0, nowStr, '/form/list', null)
+    const cid = Number(child.lastInsertRowid)
+    const roles = db.prepare('SELECT id FROM za_role').all() as any[]
+    const rel = db.prepare('INSERT INTO za_role_menu_relation (role_id, menu_id) VALUES (?, ?)')
+    for (const r of roles) {
+      rel.run(r.id, pid)
+      rel.run(r.id, cid)
+    }
   }
 }
 
