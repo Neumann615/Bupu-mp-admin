@@ -7,7 +7,7 @@ import {
   SaveOutlined,
   UndoOutlined,
 } from '@ant-design/icons'
-import { App, Button, Divider, Input, Modal, Space } from 'antd'
+import { App, Button, Divider, Input, Modal, Space, theme } from 'antd'
 import { useState } from 'react'
 import { FormRenderer } from '../renderer/FormRenderer'
 import { useDesignerStore } from './store'
@@ -18,7 +18,10 @@ interface ToolbarProps {
 
 export function Toolbar({ onSave }: ToolbarProps) {
   const { message, modal } = App.useApp()
-  const { past, future, undo, redo, clear, importSchema, exportSchema, schema } = useDesignerStore()
+  const { token } = theme.useToken()
+  const canUndo = useDesignerStore(s => s.past.length > 0)
+  const canRedo = useDesignerStore(s => s.future.length > 0)
+  const { undo, redo, clear, importSchema, exportSchema, schema } = useDesignerStore()
   const [importOpen, setImportOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -47,8 +50,8 @@ export function Toolbar({ onSave }: ToolbarProps) {
   return (
     <Space split={<Divider type="vertical" />}>
       <Space>
-        <Button size="small" icon={<UndoOutlined />} disabled={!past.length} onClick={undo} />
-        <Button size="small" icon={<RedoOutlined />} disabled={!future.length} onClick={redo} />
+        <Button size="small" icon={<UndoOutlined />} disabled={!canUndo} onClick={undo} />
+        <Button size="small" icon={<RedoOutlined />} disabled={!canRedo} onClick={redo} />
       </Space>
       <Space>
         <Button size="small" icon={<ImportOutlined />} onClick={() => setImportOpen(true)}>导入</Button>
@@ -88,7 +91,7 @@ export function Toolbar({ onSave }: ToolbarProps) {
           }}
         />
         {submitted && (
-          <pre style={{ marginTop: 16, padding: 12, background: '#f5f5f5', borderRadius: 6, maxHeight: 240, overflow: 'auto' }}>
+          <pre style={{ marginTop: 16, padding: 12, background: token.colorFillSecondary, borderRadius: 6, maxHeight: 240, overflow: 'auto' }}>
             {submitted}
           </pre>
         )}
