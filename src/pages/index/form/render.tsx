@@ -20,8 +20,14 @@ export default function FormRenderPage() {
       return
     getFormDetailAPI(id).then((res) => {
       setName(res.data.name)
-      if (res.data.schema)
-        setSchema(JSON.parse(res.data.schema))
+      if (res.data.schema) {
+        try {
+          setSchema(JSON.parse(res.data.schema))
+        }
+        catch {
+          message.warning('表单数据解析失败')
+        }
+      }
     }).finally(() => setLoading(false))
   }, [id])
 
