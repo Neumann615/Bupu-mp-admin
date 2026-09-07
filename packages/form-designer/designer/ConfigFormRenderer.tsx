@@ -19,15 +19,15 @@ export function ConfigFormRenderer({ node, metas }: ConfigFormRendererProps) {
     const onChange = (v: any) => updateField(node.id, meta.field, v)
     switch (meta.type) {
       case 'input':
-        return <Input size="small" value={value} onChange={e => onChange(e.target.value)} {...meta.props} />
+        return <Input size="small" value={value ?? ''} onChange={e => onChange(e.target.value)} {...meta.props} />
       case 'textarea':
-        return <Input.TextArea size="small" rows={2} value={value} onChange={e => onChange(e.target.value)} {...meta.props} />
+        return <Input.TextArea size="small" rows={2} value={value ?? ''} onChange={e => onChange(e.target.value)} {...meta.props} />
       case 'number':
-        return <InputNumber size="small" style={{ width: '100%' }} value={value} onChange={v => onChange(v)} {...meta.props} />
+        return <InputNumber size="small" style={{ width: '100%' }} value={value ?? null} onChange={v => onChange(v)} {...meta.props} />
       case 'switch':
         return <Switch size="small" checked={!!value} onChange={onChange} {...meta.props} />
       case 'select':
-        return <Select size="small" style={{ width: '100%' }} value={value} options={meta.options} onChange={onChange} allowClear {...meta.props} />
+        return <Select size="small" style={{ width: '100%' }} value={value ?? undefined} options={meta.options} onChange={onChange} allowClear {...meta.props} />
       case 'options':
         return <OptionsEditor value={value} onChange={onChange} />
       case 'json':

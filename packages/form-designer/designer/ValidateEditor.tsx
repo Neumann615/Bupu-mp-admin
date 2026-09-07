@@ -17,7 +17,15 @@ interface ValidateEditorProps {
 
 export function ValidateEditor({ value = [], onChange }: ValidateEditorProps) {
   const update = (index: number, patch: Partial<ValidateRule>) => {
-    onChange?.(value.map((r, i) => (i === index ? { ...r, ...patch } : r)))
+    onChange?.(value.map((r, i) => {
+      if (i !== index)
+        return r
+      const next = { ...r, ...patch }
+      // 切换到非 regexp 类型时清除残留 pattern
+      if (patch.type && patch.type !== 'regexp')
+        delete next.pattern
+      return next
+    }))
   }
 
   return (
@@ -35,9 +43,9 @@ export function ValidateEditor({ value = [], onChange }: ValidateEditorProps) {
             <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => onChange?.(value.filter((_, j) => j !== i))} />
           </div>
           {rule.type === 'regexp' && (
-            <Input size="small" placeholder="正则表达式，如 ^1\d{10}$" value={rule.pattern} onChange={e => update(i, { pattern: e.target.value })} />
+            <Input size="small" placeholder="正则表达式，如 ^1\d{10}$" value={rule.pattern ?? ''} onChange={e => update(i, { pattern: e.target.value })} />
           )}
-          <Input size="small" placeholder="校验失败提示语（可选）" value={rule.message} onChange={e => update(i, { message: e.target.value })} />
+          <Input size="small" placeholder="校验失败提示语（可选）" value={rule.message ?? ''} onChange={e => update(i, { message: e.target.value })} />
         </div>
       ))}
       <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={() => onChange?.([...value, { type: 'required' }])}>

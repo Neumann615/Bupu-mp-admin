@@ -35,7 +35,7 @@ function FieldConfig() {
   return (
     <div style={{ padding: 12 }}>
       <Divider titlePlacement="start" plain style={{ margin: '4px 0 12px' }}>基础</Divider>
-      <ConfigFormRenderer node={node} metas={commonMetas} />
+      <ConfigFormRenderer key={node.id} node={node} metas={commonMetas} />
       {hasField && (
         <>
           <Divider titlePlacement="start" plain style={{ margin: '16px 0 12px' }}>校验规则</Divider>
@@ -48,7 +48,7 @@ function FieldConfig() {
       {def.configForm.length > 0 && (
         <>
           <Divider titlePlacement="start" plain style={{ margin: '16px 0 12px' }}>组件属性</Divider>
-          <ConfigFormRenderer node={node} metas={def.configForm} />
+          <ConfigFormRenderer key={node.id} node={node} metas={def.configForm} />
         </>
       )}
     </div>
@@ -96,11 +96,11 @@ function FormConfig() {
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 12, color: '#666' }}>显示冒号</span>
-        <Switch size="small" checked={form.colon} onChange={v => updateFormConfig({ colon: v })} />
+        <Switch size="small" checked={!!form.colon} onChange={v => updateFormConfig({ colon: v })} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 12, color: '#666' }}>整体禁用</span>
-        <Switch size="small" checked={form.disabled} onChange={v => updateFormConfig({ disabled: v })} />
+        <Switch size="small" checked={!!form.disabled} onChange={v => updateFormConfig({ disabled: v })} />
       </div>
     </div>
   )
