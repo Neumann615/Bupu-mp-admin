@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { FieldSchema } from '../types/schema'
 import { Alert, Form } from 'antd'
 import { getComponent } from '../registry/registry'
+import { FieldControl } from './FieldControl'
 import { toAntdRules } from './toAntdRules'
 import '../registry/components'
 
@@ -34,7 +35,7 @@ export function renderField(
       hidden={schema.formItem?.hidden}
       {...def.formItemProps}
     >
-      {control}
+      <FieldControl def={def} schema={schema} />
     </Form.Item>
   )
 }
