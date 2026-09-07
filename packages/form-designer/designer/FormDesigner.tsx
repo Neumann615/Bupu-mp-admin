@@ -1,6 +1,7 @@
 import type { FormSchema } from '../types/schema'
 import { createStyles } from 'antd-style'
 import { useEffect, useRef } from 'react'
+import { LeftPanel } from './LeftPanel'
 import { useDesignerStore } from './store'
 import { Toolbar } from './Toolbar'
 import '../registry/components'
@@ -110,7 +111,7 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
         <Toolbar onSave={onSave ? () => onSave(schema) : undefined} />
       </div>
       <div className={styles.body}>
-        <div className={styles.left}>{/* T5：LeftPanel */}</div>
+        <div className={styles.left}><LeftPanel /></div>
         <div className={styles.canvas}>{/* T6：Canvas */}</div>
         <div className={styles.right}>{/* T7：RightPanel */}</div>
       </div>
