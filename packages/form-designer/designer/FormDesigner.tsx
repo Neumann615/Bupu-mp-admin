@@ -71,7 +71,13 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
       return /^(?:INPUT|TEXTAREA)$/.test(el.tagName) || el.isContentEditable
     }
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!rootRef.current?.contains(e.target as Node))
+      const root = rootRef.current
+      if (!root)
+        return
+      const inRoot = root.contains(e.target as Node)
+      // 点击画布后焦点回落 body：仅当设计器可见（非 keep-alive display:none 隐藏）时放行
+      const bodyFallback = e.target === document.body && root.offsetParent !== null
+      if (!inRoot && !bodyFallback)
         return
       const key = e.key.toLowerCase()
       const mod = e.ctrlKey || e.metaKey
