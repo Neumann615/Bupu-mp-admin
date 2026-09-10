@@ -29,14 +29,17 @@ function FieldConfig() {
   if (!def)
     return <div style={{ color: '#999', padding: 12 }}>未注册的组件类型</div>
 
-  const hasField = !def.isContainer && !def.noFormItem
+  // 值绑定容器（嵌套对象/数组）同样需要配置字段名；校验规则仍只对挂 Form.Item 的非容器开放
+  const isValueContainer = !!def.nestObject || !!def.nestList
+  const hasField = !def.noFormItem && (!def.isContainer || isValueContainer)
+  const hasRules = !def.isContainer && !def.noFormItem
   const commonMetas = getCommonMetas(hasField)
 
   return (
     <div style={{ padding: 12 }}>
       <Divider titlePlacement="start" plain style={{ margin: '4px 0 12px' }}>基础</Divider>
       <ConfigFormRenderer key={node.id} node={node} metas={commonMetas} />
-      {hasField && (
+      {hasRules && (
         <>
           <Divider titlePlacement="start" plain style={{ margin: '16px 0 12px' }}>校验规则</Divider>
           <ValidateEditor

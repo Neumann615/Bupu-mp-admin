@@ -10,3 +10,8 @@ export function fieldSchema(type: string, label: string, props: Record<string, a
 export function bareSchema(type: string, props: Record<string, any> = {}, children?: FieldSchema[]): FieldSchema {
   return { id: uniqueId(), type, props, children }
 }
+
+/** 生成值绑定容器的默认 schema（带 field：嵌套对象 / 数组容器） */
+export function groupSchema(type: string, label: string, props: Record<string, any> = {}, children?: FieldSchema[]): FieldSchema {
+  return { id: uniqueId(), type, field: uniqueId(), label, props, children }
+}

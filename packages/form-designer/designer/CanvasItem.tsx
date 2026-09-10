@@ -6,6 +6,7 @@ import { createStyles } from 'antd-style'
 import { getComponent } from '../registry/registry'
 import { DropGap } from './DropGap'
 import { useDesignerStore } from './store'
+import { useRemoveField } from './useRemoveField'
 
 const useStyles = createStyles(({ token, css }) => ({
   /**
@@ -69,8 +70,8 @@ export function CanvasItem({ node }: CanvasItemProps) {
   // 布尔选择器：仅当选中态在当前项上进/出时才重渲染，避免选中切换扇出到全部 CanvasItem
   const selected = useDesignerStore(s => s.selectedId === node.id)
   const select = useDesignerStore(s => s.select)
-  const removeField = useDesignerStore(s => s.removeField)
   const duplicateField = useDesignerStore(s => s.duplicateField)
+  const removeField = useRemoveField()
   const def = getComponent(node.type)
 
   // 拖拽激活区域随选中态变化属有意设计（formily 同款行为，勿当回归修复）：

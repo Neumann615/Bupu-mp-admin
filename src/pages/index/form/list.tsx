@@ -1,11 +1,11 @@
 import type { FormRecord } from '@/apis/form'
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, SendOutlined, StopOutlined } from '@ant-design/icons'
 import { useAppMessage, useControlTab } from '@zealous-admin/layout/index'
 import { Button, Card, Input, Modal, Space, Table, Tag } from 'antd'
 import { createStyles } from 'antd-style'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
-import { createFormAPI, deleteFormAPI, getFormListAPI } from '@/apis/form'
+import { createFormAPI, deleteFormAPI, getFormListAPI, updateFormAPI } from '@/apis/form'
 
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
@@ -69,6 +69,16 @@ export default function FormListPage() {
     openTab({ key: `/form/design?id=${res.data.id}`, label: `设计-${name.trim()}` })
   }
 
+  const handleToggleStatus = async (row: FormRecord) => {
+    const next = row.status === 1 ? 0 : 1
+    try {
+      await updateFormAPI({ id: row.id, status: next })
+      message.success(next === 1 ? '已发布' : '已下线')
+      load()
+    }
+    catch { /* 失败提示由 http 拦截器统一弹出 */ }
+  }
+
   const handleDelete = (row: FormRecord) => {
     modal.confirm({
       title: '提示',
@@ -105,12 +115,15 @@ export default function FormListPage() {
     {
       title: '操作',
       key: 'actions',
-      width: 220,
+      width: 280,
       align: 'center' as const,
       render: (_: any, row: FormRecord) => (
         <Space size="small">
           <Button size="small" type="link" icon={<EditOutlined />} onClick={() => openTab({ key: `/form/design?id=${row.id}`, label: `设计-${row.name}` })}>设计</Button>
           <Button size="small" type="link" icon={<EyeOutlined />} onClick={() => openTab({ key: `/form/render?id=${row.id}`, label: `渲染-${row.name}` })}>渲染</Button>
+          <Button size="small" type="link" icon={row.status === 1 ? <StopOutlined /> : <SendOutlined />} onClick={() => handleToggleStatus(row)}>
+            {row.status === 1 ? '下线' : '发布'}
+          </Button>
           <Button size="small" type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(row)}>删除</Button>
         </Space>
       ),

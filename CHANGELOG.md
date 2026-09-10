@@ -4,6 +4,28 @@
 
 - 🔧 **表单设计器画布布局优化**（`Canvas.tsx`、`design.tsx`）：画布改为撑满容器宽度，空态落点撑满整块画布，页面容器高度改为 `100%`
 - 🔧 **服务默认端口调整**（`index.ts`）：3001 → 3508
+- ✨ **表单设计器 P5：高级组件与子表单**（`advanced.tsx`、`subForm.tsx`、`components/index.ts`）：新增上传 / 金额输入 / 图标选择器与子表单 / 表格子表单 / 分步表单共 6 个组件，左侧面板增加「高级组件」「子表单」两个分组，内置组件达 37 个
+- ✨ **渲染器嵌套名路径**（`namePrefix.ts`、`FieldItem.tsx`、`ContainerField.tsx`、`ListField.tsx`、`renderField.tsx`）：子表单提交 `{ 字段名: { 子字段 } }`，表格子表单走 `Form.List` 提交 `[{ 子字段 }]` 并支持行增删；`descriptions` / `tableForm` 的子节点不再重复渲染 label
+- ✨ **注册表支持值绑定容器**（`registry.ts`、`helpers.ts`、`RightPanel.tsx`）：`ComponentDef` 新增 `nestObject` / `nestList` / `renderList`，`MenuGroup` 扩展 `advanced` / `subform`，新增 `groupSchema`，属性面板对值绑定容器开放「字段名」配置
+- ✨ **表单发布 / 下线**（`list.tsx`）：操作列按 `status` 切换发布态，复用 `updateFormAPI`
+- 🔧 **容器删除二次确认**（`useRemoveField.ts`、`CanvasItem.tsx`、`FormDesigner.tsx`）：含子字段的容器删除前弹窗确认，画布删除按钮与 Delete 快捷键共用入口，删除后仍可撤销
+- 🐛 **设计页保存失败兜底**（`design.tsx`）：`handleSave` 吞掉 rejection，本地 schema 保留可直接重试，失败提示由 http 拦截器统一弹出
+- ✅ **渲染器测试补齐**（`FormRenderer.smoke.test.tsx`、`namePrefix.test.ts`、`nestedValue.test.tsx`、`test/setupDom.ts`）：覆盖全部注册组件默认渲染、嵌套提交结构与数组行增删；新增 devDeps `jsdom`、`@testing-library/react`
+- ✅ **设计器交互测试**（`FormDesigner.interaction.test.tsx`）：左栏「高级组件 / 子表单」分组、6 个新组件的画布设计态外壳、值绑定容器与普通容器的属性面板差异、预览弹窗内表格子表单增删行与嵌套提交结构、容器删除二次确认与撤销
+- 📝 **文档站新增表单设计器章节**（`docs/form-designer/`、`docs/.vitepress/config.ts`）：总览 / Schema 结构 / 组件清单 / 设计器与渲染器四篇，导航与侧边栏同步挂载
+- 📝 **P5 实现计划**（`docs/superpowers/plans/2026-09-10-form-designer-p5.md`）：P5 任务拆解与 P1–P4 遗留项处置
+- 📝 **CLAUDE.md 描述纠正**（`CLAUDE.md`）：后端实际为 Express 5 + `node:sqlite`、默认端口 3508，同步真实目录结构与开发约定
+
+## 2026-09-07
+
+- ✨ **新增 form-designer 包**（`packages/form-designer/`）：React + antd 6 自研低代码表单方案，声明式组件注册表，设计器画布与运行时渲染共用同一份 `FormSchema`
+- ✨ **设计器骨架与工具栏**（`FormDesigner.tsx`、`Toolbar.tsx`、`store.ts`）：三栏布局、撤销 / 重做（历史栈上限 50）、导入导出 JSON、清空、实时预览、保存，Delete / Ctrl+Z / Ctrl+Shift+Z / Ctrl+D 快捷键
+- ✨ **画布拖拽与容器嵌套**（`Canvas.tsx`、`CanvasItem.tsx`、`DropGap.tsx`、`LeftPanel.tsx`）：`@dnd-kit/react` 间隙落点、选中 / 复制 / 删除、组件面板分组搜索、布局容器外壳镜像样式与横向落点
+- ✨ **31 个内置组件**（`registry/components/`）：17 个基础输入 + 5 个辅助 + 9 个布局，全部经 `registerComponent` 声明式注册
+- ✨ **右侧配置面板**（`RightPanel.tsx`、`ConfigFormRenderer.tsx`、`OptionsEditor.tsx`、`ValidateEditor.tsx`）：属性 / 校验规则 / 全局表单配置三段式，文本类配置连续编辑合并撤销历史（`coalesceKey`）
+- ✨ **表单存取闭环**（`service/src/routes/form.ts`、`src/apis/form.ts`、`src/pages/index/form/`）：新增 `za_form` 表与 list / detail / create / update / delete 五个接口，表单管理 / 设计 / 渲染三个演示页打通
+- ✅ **Vitest 单测**（`utils/`、`store.test.ts`、`registry.test.ts`、`toAntdRules.test.ts`）：schema 树操作、store mutation 语义、注册表分组、校验规则映射
+- 📝 **设计规格与实现计划**（`docs/superpowers/specs/2026-09-07-form-designer-design.md`、`docs/superpowers/plans/2026-09-07-form-designer.md`）
 
 ## 2026-08-26
 

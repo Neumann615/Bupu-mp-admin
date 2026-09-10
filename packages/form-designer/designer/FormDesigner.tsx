@@ -8,6 +8,7 @@ import { LeftPanel } from './LeftPanel'
 import { RightPanel } from './RightPanel'
 import { useDesignerStore } from './store'
 import { Toolbar } from './Toolbar'
+import { useRemoveField } from './useRemoveField'
 import '../registry/components'
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -59,6 +60,7 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
   const { styles } = useStyles()
   const { setSchema, schema } = useDesignerStore()
   const rootRef = useRef<HTMLDivElement>(null)
+  const removeField = useRemoveField()
 
   function handleDragEnd(event: DragEndEvent) {
     if (event.canceled)
@@ -102,7 +104,7 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
       const mod = e.ctrlKey || e.metaKey
       if (isEditable(e.target))
         return
-      const { selectedId, removeField, duplicateField, undo, redo } = useDesignerStore.getState()
+      const { selectedId, duplicateField, undo, redo } = useDesignerStore.getState()
       if (mod && key === 'z' && !e.shiftKey) {
         e.preventDefault()
         undo()
@@ -121,7 +123,7 @@ export function FormDesigner({ initialSchema, onSave }: FormDesignerProps) {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
+  }, [removeField])
 
   return (
     <div ref={rootRef} className={styles.root}>

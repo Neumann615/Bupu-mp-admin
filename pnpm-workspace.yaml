@@ -60,6 +60,8 @@ catalog:
   zustand: ^5.0.14
   modern-screenshot: ^4.7.0
   vitest: ^5.0.0
+  jsdom: ^30.0.1
+  '@testing-library/react': ^16.3.3
 allowBuilds:
   '@swc/core': true
   esbuild: true

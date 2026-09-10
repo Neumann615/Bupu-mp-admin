@@ -11,33 +11,37 @@ pnpm lint                 # ESLint check
 pnpm lint:fix             # ESLint auto-fix
 pnpm docs:dev             # VitePress docs dev server
 pnpm docs:build           # VitePress static build
-cd service && pnpm dev    # Backend dev server (Hono, port 3001 or $PORT)
+cd service && pnpm dev    # Backend dev server (Express, port 3508 or $PORT)
 ```
 
 ## Architecture
 
-Monorepo (pnpm workspace) with React 19 frontend + Hono backend + shared packages.
+Monorepo (pnpm workspace) with React 19 frontend + Express backend + shared packages.
 
 ### Layer map
 
 ```
-src/                    # App shell (routing, stores, pages)
-  App.tsx               # Route guard + LayoutProvider + AppMessageInit
+src/                    # App shell (thin: routes + api wrappers only)
+  App.tsx               # Route guard + LayoutProvider + menu conversion
   pages/                # File-based routes (vite-plugin-pages)
-  store/mall/           # Domain stores (user.ts)
-  utils/http.ts         # Axios instance (interceptors use global message/modal refs)
+  apis/                 # API functions per domain (http instance lives in packages/layout)
 
 packages/
   layout/               # Layout framework (5 modes: side/only-side/head/only-head/simple)
-    store/              # Zustand stores (menu, topBar, app, theme, page) — persist to localStorage
-    hooks/              # useControlTab (open/close/swap tabs, breadcrumb, navigation)
-  components/           # Shared UI (ZaIcon, ZaMarquee, ZaShinyText, ZaSliderCaptcha, PatternBg, etc.)
+    store/              # Zustand stores (user, menu, topBar, app, theme, page) — persist to localStorage
+    hooks/              # useControlTab (open/close/swap tabs, breadcrumb, navigation), useAppMessage
+    utils/              # http (axios instance), appMessage (global message/modal refs), i18n
+  components/           # Shared UI (ZaIcon, ZaIconPicker, ZaRichTextEditor, ZaSignaturePad, ZaMarquee, etc.)
+  form-designer/        # Self-built form designer: registry + designer + renderer (docs/form-designer/)
+  locales/              # Unified i18n messages for layout and components
   theme/                # Theme hooks (useBootstrapTheme, useGlassTheme, etc.)
+  utils/                # Shared helpers (data, env, file, parse, time)
 
-service/                # Backend: Hono + Drizzle ORM + mysql2
-  src/db/schema.ts      # Drizzle schema definitions (umsAdmin, umsRole, umsMenu, etc.)
-  src/routes/           # API routes by domain (admin, role, menu, brand, product, order, marketing)
-  src/middleware/auth.ts # JWT Bearer token middleware
+service/                # Backend: Express 5 + node:sqlite (DatabaseSync), no ORM
+  src/db/index.ts       # Table DDL + seed data + idempotent migrations (za_admin, za_role, za_menu, za_dict, za_form)
+  src/db/schema.ts      # Plain TS interfaces describing row shapes
+  src/routes/           # API routes by domain (admin, role, menu, dict, form, mcp)
+  src/middleware/auth.ts # JWT Bearer token middleware (jose)
 docs/                   # VitePress documentation site
 ```
 
@@ -49,13 +53,13 @@ docs/                   # VitePress documentation site
 
 **Tab/Breadcrumb navigation**: Use `useControlTab().openTab({key, label})` to programmatically navigate. Never use `navigate()` directly — it won't sync tab/breadcrumb state. Popstate listener in `Layout.tsx` auto-syncs on browser back/forward.
 
-**State management**: Zustand stores persisted to localStorage with prefix `zealous-admin-`. `useMallUserStore` for auth; layout stores (`useMenuStore`, `useTopBarStore`, `useAppStore`, `useThemeStore`) for layout config.
+**State management**: Zustand stores persisted to localStorage with prefix `zealous-admin-`. `useUserStore` for auth; layout stores (`useMenuStore`, `useTopBarStore`, `useAppStore`, `useThemeStore`) for layout config. All exported from `@zealous-admin/layout/index`.
 
 **antd theme sync**: `<App>` component wraps app in `LayoutProvider.tsx`. All `message.xxx()` and `Modal.confirm()` must use context-aware versions:
-- Components: `const { message, modal } = useAppMessage()` (from `@/hooks/useAppMessage`)
-- Non-component code (`http.ts`): `getGlobalMessage()?.error(...)` / `getGlobalModal()?.confirm(...)` (injected by `AppMessageInit`)
+- Components: `const { message, modal } = useAppMessage()` (from `@zealous-admin/layout/index`); inside `packages/form-designer` use antd's `App.useApp()` directly (the package must not depend on layout)
+- Non-component code (`http.ts`): `getGlobalMessage()?.error(...)` / `getGlobalModal()?.confirm(...)` (refs injected by `AppMessageProvider`)
 
-**Database writes**: Never use `new Date().toISOString()` — MySQL strict mode rejects ISO 8601. Always pass `new Date()` directly; mysql2 pool has `timezone: 'Z'` configured for proper serialization.
+**Database writes**: Timestamps are stored as TEXT via `now()` from `service/src/lib/date.ts` (`YYYY-MM-DD HH:mm:ss`, local time). Never write `new Date().toISOString()` — the ISO `T`/`Z` shape is inconsistent with existing rows and breaks ordering plus frontend dayjs formatting.
 
 <!-- superpowers-zh:begin (do not edit between these markers) -->
 # Superpowers-ZH 中文增强版

@@ -44,6 +44,10 @@ features:
     title: 12 个业务组件
     details: 图标选择器 · 富文本编辑器 · 签名板 · Iframe 外链 · 链接预览 · Markdown · 跑马灯 · 滑块验证码
     link: /components/
+  - icon: 📝
+    title: 低代码表单设计器
+    details: 拖拽搭建 · 37 个组件 · 子表单/表格子表单，设计器与运行时共用同一份 Schema。
+    link: /form-designer/
   - icon: 🌐
     title: 中英文国际化
     details: 文案统一从 locales 包读取，antd 语言包懒加载，菜单/标签/面包屑/组件库随语言联动。
