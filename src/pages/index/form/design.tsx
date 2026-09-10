@@ -48,7 +48,7 @@ export default function FormDesignPage() {
     return <Empty description="表单不存在或已被删除" style={{ marginTop: 120 }} />
 
   return (
-    <div style={{ height: 'calc(100vh - 120px)' }}>
+    <div style={{ height: '100%' }}>
       <FormDesigner key={id} initialSchema={initialSchema} onSave={id ? handleSave : undefined} />
     </div>
   )

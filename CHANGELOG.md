@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-10
+
+- 🔧 **表单设计器画布布局优化**（`Canvas.tsx`、`design.tsx`）：画布改为撑满容器宽度，空态落点撑满整块画布，页面容器高度改为 `100%`
+- 🔧 **服务默认端口调整**（`index.ts`）：3001 → 3508
+
 ## 2026-08-26
 
 - ✨ **全局快捷键落地**（`useGlobalShortcuts.ts`、`Layout.tsx`、`index.ts`）：Ctrl+K 唤起搜索、Ctrl+I 查看系统信息、Alt 组合键切换/关闭标签页与最大化，复用 `useControlTab` 方法

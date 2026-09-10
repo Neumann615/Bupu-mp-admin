@@ -6,22 +6,26 @@ import { useDesignerStore } from './store'
 
 const useStyles = createStyles(({ token, css }) => ({
   canvas: css`
-    max-width: 900px;
-    margin: 0 auto;
+    width: 100%;
     min-height: 100%;
+    display: flex;
+    flex-direction: column;
     background: ${token.colorBgContainer};
     border-radius: ${token.borderRadiusLG}px;
     padding: ${token.paddingLG}px;
     box-shadow: ${token.boxShadowTertiary};
   `,
   empty: css`
+    flex: 1;
     display: flex;
-    align-items: center;
-    justify-content: center;
     min-height: 300px;
-    color: ${token.colorTextTertiary};
-    border: 1px dashed ${token.colorBorder};
-    border-radius: ${token.borderRadiusLG}px;
+
+    /* 空态落点撑满整块画布：外层只做布局，虚线框与拖拽高亮交给 DropGap */
+    & > div {
+      flex: 1;
+      height: auto;
+      border-radius: ${token.borderRadiusLG}px;
+    }
   `,
 }))
 
